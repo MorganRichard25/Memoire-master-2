@@ -1,0 +1,43 @@
+\section{présentation des données}
+
+\subsection{Présentation générale}
+
+Ici, je vais presenter une autres façon de faire du topic modeling sur le corpus d'Émile Zola. Cette fois-ci, je vais utiliser une approche de \textit{Dynamic Topic Modeling} (DTM) pour analyser l'évolution des thèmes au fil du temps dans les romans de Zola. L'objectif est de comprendre comment les motifs naturalistes se transforment et circulent à travers son œuvre, du début de sa carrière jusqu'à ses derniers romans.
+
+Le corpus que j'ai utlisé pour faire le DTM est le même\footnote{Cf. chapitre 1 dans la sous partie présentation des données} que celui utilisé pour le topic modéling classique\footnote{Ici quand je dis \textit{Topic Modeling} classique, c'est du \textit{Topic Modeling} statique ou figé sur l'ensemble global de son oeuvre}. 
+
+Ici ce qui sera intéressent, c'est de voir comment les topics évoluent au fil du temps, voir quels topics apparaissent, disparaissent, se transforment ou plus intéressent voir quels topic restent constant dans le temps au cours de la carrière de Zola. Voir quels topics restent constant dans le temps permettra de voir si certains thèmes que l'ont sait naturalistes sont bien présent dans l'ensemble de son oeuvre ou si certains apparaissent seulement à un moment donné de sa carrière.
+
+Pour ce qui est de la méthodologie, j'ai utilisé le même prétraitement que pour le topic modeling classique. J'ai donc tokenisé les textes, supprimé les stop words, et appliqué une lemmatisation pour réduire les mots à leur forme de base. 
+
+Les données sont organisées de manière à ce que chaque roman soit associé a une année de publication, ce qui permet de suivre l'évolution des topics au fil du temps. 
+
+\subsection{Statistique exploratoires}
+
+Les romans sont segementés en paquets de 40 phrases, c'est la même segmentation que pour le \textit{Topic Modeling} dans le chapitre 1, cela permet d'avoir une meilleure granularité dans l'analyse des topics. 
+
+On se retrouve donc avec un jeu de donnée 5327 documents\footnote{C'est à dire 5327 paquets de phrase}.
+
+\begin{table}[htbp]
+\centering
+\caption{Statistiques descriptives de la variable \textit{phrases\_paquet}}
+\label{tab:stat_phrases_paquet}
+\begin{tabular}{lr}
+\toprule
+\textbf{Métrique} & \textbf{Valeur} \\
+\midrule
+count & 5327.000 \\
+mean  & 785.298 \\
+std   & 212.129 \\
+min   & 42.000 \\
+25\%  & 636.000 \\
+50\%  & 753.000 \\
+75\%  & 902.500 \\
+max   & 2944.000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+En moyenne, un paquet contient environ 785 mots, tandis que la médiane s’élève à 753 mots, ce qui indique que la distribution est légèrement influencée par certains paquets particulièrement longs. La moitié des documents comprend entre 636 et 902,5 mots, ce qui montre que la majorité des paquets possède une taille relativement homogène malgré un écart type de 212 mots. Les valeurs extrêmes, comprises entre 42 et 2,944 mots, révèlent néanmoins une forte variabilité ponctuelle, qui peut s’expliquer par les différences de longueur des phrases entre les romans, mais aussi par la présence éventuelle de paquets incomplets, notamment à la fin de chaque œuvre. Dans l’ensemble, ces résultats confirment que la segmentation en 40 phrases produit des unités textuelles suffisamment riches pour l’analyse thématique, tout en conservant une certaine diversité de longueur.
+
+L’examen des valeurs extrêmes\footnote{Le code est disponible en annaxe du document} montre que la forte amplitude observée entre le minimum et le maximum concerne en réalité une très faible proportion du corpus. Parmi les 5,327 paquets, seuls 12 contiennent moins de 300 mots, soit environ 0,23\% des documents, tandis que 24 dépassent 1,500 mots, soit environ 0,45\%. Parmi ces derniers, un seul paquet contient plus de 2,000 mots, ce qui confirme que la valeur maximale de 2,944 mots constitue un cas particulièrement isolé. Au total, 5,291 paquets, soit environ 99,32\% du jeu de données, comportent entre 300 et 1,500 mots. La variabilité mise en évidence par l’écart type est donc principalement liée à quelques observations atypiques et ne remet pas en cause l’homogénéité globale de la segmentation. Les paquets les plus courts peuvent notamment correspondre aux dernières sections des romans, lorsqu’il reste moins de 40 phrases à regrouper, tandis que les paquets les plus longs peuvent s’expliquer par la présence de phrases particulièrement développées ou par des spécificités de ponctuation et de segmentation propres à certains textes.
