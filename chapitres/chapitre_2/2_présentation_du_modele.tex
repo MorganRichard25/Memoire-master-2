@@ -1,20 +1,118 @@
 \section{Utilisation de BerTopic}
+\label{sec:utilisation_bertopic}
 
-\subsection{Lemmatisation des données}
+Cette section présente la construction et la sélection du modèle BERTopic utilisé dans la suite de l'étude. Elle s'appuie exclusivement sur le notebook \path{01_recherche_hyperparametres.ipynb} : il ne s'agit donc pas encore d'interpréter les topics, mais d'expliciter les choix techniques, les critères de comparaison et l'arbitrage qui conduit au modèle final. Les dates de publication et l'ordre des romans n'interviennent pas dans la formation des groupes. La dimension temporelle n'est introduite qu'après cette sélection, afin de ne pas imposer au modèle une évolution chronologique préalable.
 
-Comme pour tout modèle de traitement du langage naturel, il est important de préparer les données avant de les utiliser avec BerTopic. La lemmatisation est une étape clé dans ce processus, j'ai suivi les memes etapes que pour le NMF ainsi que le KMeans. 
+\subsection{Architecture générale et représentation du corpus}
 
-J'ai utilisé la bibliothèque spaCy pour effectuer la lemmatisation des textes, j'ai réutilisé le même modele de langue que pour le \textit{Topic modeling} classique, le \textit{"fr\_core\_news\_lg"}. Cette étape permet de réduire les mots à leur forme de base, ce qui facilite l'analyse et l'extraction des thèmes. 
+BERTopic est une méthode modulaire de modélisation thématique. Elle articule quatre opérations distinctes : la représentation sémantique des documents par des embeddings, la réduction de la dimension de ces vecteurs, leur regroupement par densité et, enfin, la représentation lexicale de chaque groupe par le \textit{class-based TF-IDF}, ou c-TF-IDF\footnote{Maarten Grootendorst, « BERTopic: Neural topic modeling with a class-based TF-IDF procedure », 2022, \href{https://arxiv.org/abs/2203.05794}{article original} ; voir également la \href{https://maartengr.github.io/BERTopic/algorithm/algorithm.html}{documentation de l'architecture BERTopic}, consultés le 28 juillet 2026.}. Cette architecture sépare ainsi la proximité sémantique des segments des mots qui rendent les regroupements interprétables.
 
-\subsection{Préparation des embeddings}
+Le corpus soumis à la recherche comprend 5\,327 paquets de phrases non vides. Chacun est encodé avec le modèle francophone \texttt{dangvantuan/sentence-camembert-base}\footnote{\href{https://huggingface.co/dangvantuan/sentence-camembert-base}{Fiche du modèle \texttt{sentence-camembert-base}} sur Hugging Face, consultée le 28 juillet 2026.}, qui produit un vecteur dense de 768 dimensions. L'embedding est calculé sur le texte non lemmatisé, afin de préserver l'information contextuelle utile au modèle neuronal. BERTopic reçoit parallèlement les segments lemmatisés pour construire les représentations lexicales ; ceux-ci servent aussi au calcul de la cohérence. Le protocole distingue donc la représentation sémantique, fondée sur le texte continu, de la caractérisation lexicale, fondée sur un vocabulaire normalisé.
 
-Le modèle \texttt{dangvantuan/sentence-camembert-base} est utilisé afin de transformer chaque segment textuel en un vecteur numérique dense, appelé \textit{embedding}, qui représente son contenu sémantique. Fondé sur CamemBERT et adapté à la langue française, ce modèle permet de rapprocher les documents qui traitent de thèmes similaires, même lorsqu’ils n’emploient pas exactement le même vocabulaire. Ces représentations vectorielles sont ensuite fournies à BERTopic, qui s’appuie sur leur proximité pour réduire leur dimension, regrouper les documents sémantiquement proches et identifier les principaux topics du corpus. L’utilisation de ces embeddings est particulièrement pertinente dans le cadre d’un \textit{Dynamic Topic Modeling} (DTM), puisqu’elle permet d’étudier l’évolution des thèmes au cours du récit tout en tenant compte du contexte lexical et sémantique de chaque paquet de phrases.
+Les embeddings sont calculés une seule fois, enregistrés dans un fichier partagé, puis rechargés lors des recherches ultérieures. Le notebook vérifie que leur nombre correspond au nombre de documents et applique un masque identique aux deux objets lorsqu'un segment lemmatisé vide doit être exclu. Ce contrôle prévient tout décalage entre un texte et son vecteur. Il garantit aussi que les 256 configurations sont comparées à partir d'une représentation sémantique strictement identique.
 
-\subsection{Préparation des paramètres du modèle}
+\subsection{Réduction de dimension, clustering et représentation lexicale}
 
-Afin d’identifier des thèmes cohérents à partir des représentations sémantiques, BERTopic combine une réduction de dimension avec un algorithme de classification non supervisée. Le modèle UMAP réduit les embeddings à trois dimensions afin de faciliter la détection des groupes tout en conservant au mieux leur structure sémantique. Le paramètre \texttt{n\_neighbors=20} permet de prendre en compte un voisinage suffisamment large pour préserver à la fois les relations locales et l’organisation générale du corpus, tandis que \texttt{min\_dist=0.0} favorise la formation de groupes compacts. L’utilisation de la distance cosinus est adaptée aux embeddings textuels, car elle mesure la proximité entre leurs orientations plutôt que leur amplitude. Enfin, la fixation de \texttt{random\_state=42} garantit la reproductibilité de la réduction dimensionnelle.
+Les vecteurs sont d'abord réduits avec UMAP (\textit{Uniform Manifold Approximation and Projection}). L'algorithme cherche à préserver les voisinages des observations dans un espace de dimension plus faible, où les zones denses deviennent plus faciles à identifier\footnote{Leland McInnes, John Healy et James Melville, « UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction », 2018, \href{https://arxiv.org/abs/1802.03426}{arXiv:1802.03426} ; voir aussi la \href{https://umap-learn.readthedocs.io/en/latest/parameters.html}{documentation des paramètres UMAP}, consultés le 28 juillet 2026.}. Deux paramètres sont explorés. \texttt{n\_neighbors} règle l'étendue du voisinage : une valeur faible privilégie les structures locales, tandis qu'une valeur élevée accorde davantage de poids à l'organisation globale. \texttt{n\_components} fixe la dimension de l'espace transmis au clustering ; il ne s'agit pas ici d'une simple projection graphique en deux dimensions. La métrique cosinus, \texttt{min\_dist=0.0}, \texttt{random\_state=42} et \texttt{low\_memory=True} restent constants. La graine commune rend les configurations comparables et la distance minimale nulle autorise la formation de zones compactes.
 
-La classification des segments est ensuite réalisée avec HDBSCAN. Le paramètre \texttt{min\_cluster\_size=27} impose qu’un topic soit représenté par au moins 27 segments, ce qui limite l’apparition de thèmes trop spécifiques ou insuffisamment documentés. Le paramètre \texttt{min\_samples=4} conserve une certaine souplesse dans la formation des clusters, tout en permettant d’identifier comme atypiques les observations éloignées des groupes principaux. La méthode \texttt{eom} privilégie les clusters les plus stables dans la structure hiérarchique produite par HDBSCAN. L’activation de \texttt{prediction\_data} conserve par ailleurs les informations nécessaires à l’affectation ultérieure de nouveaux documents ou au traitement des observations considérées comme aberrantes.
+HDBSCAN regroupe ensuite les vecteurs réduits. Cette méthode hiérarchique fondée sur la densité n'exige ni un nombre de groupes fixé à l'avance, ni des clusters de forme ou de taille comparables. Les observations qui n'appartiennent pas à une zone suffisamment dense reçoivent l'étiquette \texttt{-1} et sont considérées comme du bruit\footnote{Ricardo J. G. B. Campello, Davoud Moulavi et Jörg Sander, « Density-Based Clustering Based on Hierarchical Density Estimates », 2013, \href{https://doi.org/10.1007/978-3-642-37456-2_14}{DOI de l'article} ; \href{https://hdbscan.readthedocs.io/en/latest/parameter_selection.html}{documentation de la sélection des paramètres HDBSCAN}, consultés le 28 juillet 2026.}. \texttt{min\_cluster\_size} détermine la taille minimale recherchée pour un cluster ; \texttt{min\_samples} règle le caractère conservateur de l'assignation et tend, lorsqu'il augmente, à classer davantage de documents comme atypiques. La distance euclidienne et la méthode d'extraction \texttt{eom} sont maintenues. Aucun nombre de topics n'est imposé (\texttt{nr\_topics=None}) : il résulte de l'interaction entre UMAP et HDBSCAN. Les probabilités et les données de prédiction, inutiles pour ce classement, ne sont pas calculées afin de limiter le coût de la grille.
 
-La représentation lexicale de chaque topic repose sur un \texttt{CountVectorizer}. Le seuil \texttt{min\_df=2} élimine les termes n’apparaissant que dans un seul segment, souvent peu représentatifs ou associés à des erreurs de transcription, tandis que \texttt{max\_df=0.6} écarte les mots présents dans plus de 60\,\% des segments, dont le pouvoir discriminant est généralement limité. Le modèle \texttt{ClassTfidfTransformer} pondère ensuite les termes selon leur importance dans chaque topic. L’option \texttt{reduce\_frequent\_words=True} réduit l’influence des mots fréquents, tandis que la pondération BM25 améliore la distinction entre les termes réellement caractéristiques d’un thème et ceux qui sont simplement courants dans le corpus.
-Le modèle BERTopic est enfin ajusté sur les segments lemmatisés en utilisant les embeddings précédemment calculés. La désactivation du calcul des probabilités réduit le coût computationnel, celles-ci n’étant pas indispensables à l’identification et à l’interprétation des topics. Après l’entraînement, les segments initialement classés comme observations aberrantes sont réaffectés au topic sémantiquement le plus proche à partir de leurs embeddings. Cette étape de réduction des \textit{outliers}, suivie d’une mise à jour des représentations thématiques, permet d’obtenir une partition plus complète et des topics lexicalement plus cohérents, ce qui facilite ensuite l’étude de leur évolution dans le cadre du \textit{Dynamic Topic Modeling}.
+Après le clustering, les documents d'un même topic sont réunis pour produire leur représentation lexicale. Le \texttt{CountVectorizer} conserve les unigrammes présents dans au moins deux segments (\texttt{min\_df=2}) et dans au plus 80\,\% du corpus (\texttt{max\_df=0.8}). Le c-TF-IDF pondère alors les termes fréquents dans une classe mais relativement rares dans les autres. Les options \texttt{bm25\_weighting=True} et \texttt{reduce\_frequent\_words=True} limitent encore le poids des mots très fréquents\footnote{\href{https://maartengr.github.io/BERTopic/api/ctfidf.html}{Documentation officielle de \texttt{ClassTfidfTransformer}}, consultée le 28 juillet 2026.}. Ces réglages modifient la lisibilité des topics, et non l'appartenance des documents aux clusters déjà formés.
+
+\subsection{Grille de recherche}
+
+La grille est le produit cartésien des quatre paramètres variables présentés dans le tableau~\ref{tab:grille_bertopic}, soit $4^4=256$ configurations. Elle confronte des voisinages UMAP plus ou moins locaux, plusieurs dimensions réduites et différents degrés d'exigence pour la densité.
+
+\begin{table}[H]
+    \centering
+    \caption{Hyperparamètres inclus dans la grille de recherche BERTopic}
+    \label{tab:grille_bertopic}
+    \begin{tabularx}{\textwidth}{>{\ttfamily}l >{\ttfamily}l X}
+        \toprule
+        \normalfont\textbf{Composant} & \normalfont\textbf{Paramètre} & \textbf{Valeurs testées} \\
+        \midrule
+        UMAP & n\_neighbors & 10, 25, 50, 60 \\
+        UMAP & n\_components & 5, 10, 15, 20 \\
+        HDBSCAN & min\_cluster\_size & 20, 40, 80, 120 \\
+        HDBSCAN & min\_samples & 1, 5, 10, 15 \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+Chaque modèle est entraîné sur les mêmes documents et embeddings. Ses paramètres, ses métriques, son statut et sa durée d'exécution sont enregistrés après chaque essai ; le modèle est ensuite libéré de la mémoire. Les 256 essais se sont achevés sans erreur. Cette sauvegarde incrémentale assure la traçabilité de la recherche et permet de reprendre le traitement sans perdre les configurations déjà calculées.
+
+\subsection{Critères d'évaluation et classement multicritère}
+
+L'évaluation combine des informations sur la partition, sa géométrie et son vocabulaire. Le nombre de topics exclut l'étiquette \texttt{-1}. Le taux d'outliers désigne la proportion de documents qui la reçoivent, tandis que la couverture en est le complément. La taille minimale, médiane et maximale des groupes ainsi que la part du plus grand topic parmi les documents assignés permettent de repérer une solution dominée par un seul cluster.
+
+Le score de silhouette compare la proximité d'une observation avec son propre cluster et avec le cluster voisin le plus proche ; une valeur élevée signale des groupes compacts et séparés\footnote{Peter J. Rousseeuw, « Silhouettes: A graphical aid to the interpretation and validation of cluster analysis », 1987, \href{https://doi.org/10.1016/0377-0427(87)90125-7}{DOI de l'article}.}. Il est calculé avec la distance euclidienne dans l'espace UMAP, sur les seuls documents assignés et, si nécessaire, sur un échantillon reproductible limité à 2\,000 observations. Le DBCV (\textit{Density-Based Clustering Validation}) complète cette mesure : conçu pour les partitions fondées sur la densité, il accepte des formes irrégulières et tient ici compte de l'ensemble des observations, bruit compris\footnote{Davoud Moulavi et al., « Density-Based Clustering Validation », 2014, \href{https://doi.org/10.1137/1.9781611973440.96}{DOI de l'article}.}.
+
+La cohérence $C_v$ estime la proximité contextuelle des dix principaux mots de chaque topic, après exclusion du groupe \texttt{-1}, à partir du corpus lemmatisé et du dictionnaire Gensim\footnote{Michael Röder, Andreas Both et Alexander Hinneburg, « Exploring the Space of Topic Coherence Measures », 2015, \href{https://doi.org/10.1145/2684822.2685324}{DOI de l'article}.}. La diversité lexicale correspond au rapport entre le nombre de termes distincts et le nombre total de termes dans ces listes. Elle pénalise ainsi les topics dont les mots caractéristiques se répètent, sans constituer à elle seule une preuve de pertinence thématique.
+
+Avant le classement, trois garde-fous éliminent les solutions trop peu informatives : au moins huit topics, au plus 65\,\% d'outliers et aucun topic représentant plus de 50\,\% des documents assignés. Parmi les 256 configurations, 92 satisfont ces conditions. Comme les indicateurs utilisent des échelles différentes, ils sont convertis en rangs percentiles. Le score global est ensuite calculé ainsi :
+
+\[
+S_{\mathrm{global}}
+= 0{,}30R_{C_v}
++ 0{,}20R_{\mathrm{sil}}
++ 0{,}15R_{\mathrm{DBCV}}
++ 0{,}15R_{\mathrm{div}}
++ 0{,}10R_{\mathrm{couv}}
++ 0{,}10R_{\mathrm{eq}}.
+\]
+
+La cohérence reçoit le poids le plus important, car la lisibilité lexicale est centrale pour l'analyse littéraire. La silhouette mesure la séparation, le DBCV la validité de la structure de densité et la diversité limite la redondance. La couverture et l'équilibre complètent le compromis ; pour ce dernier, le rang porte sur $1$ moins la part du plus grand topic. Ces pondérations ne définissent pas un optimum universel : elles rendent explicites les priorités retenues et réduisent le nombre de modèles à examiner.
+
+\subsection{Contrôle de la stabilité}
+
+Les dix premières configurations selon le score global sont réentraînées avec six graines aléatoires : 1, 11, 35, 42, 73 et 89. Les 60 entraînements obtenus donnent, pour chaque configuration, quinze comparaisons par paires. La proximité des partitions est mesurée avec l'indice de Rand ajusté (ARI), qui corrige l'accord attendu par hasard et vaut $1$ lorsque deux partitions coïncident, indépendamment de la numérotation des groupes\footnote{Lawrence Hubert et Phipps Arabie, « Comparing Partitions », 1985, \href{https://doi.org/10.1007/BF01908075}{DOI de l'article} ; voir aussi la \href{https://scikit-learn.org/stable/modules/generated/sklearn.metrics.adjusted_rand_score.html}{documentation de \texttt{scikit-learn}}, consultée le 28 juillet 2026.}.
+
+Deux ARI sont calculés. Le premier porte sur tous les documents et considère \texttt{-1} comme une catégorie ; le second ne conserve que les documents assignés à un topic dans les deux exécutions comparées. Cette distinction isole la stabilité du noyau des clusters de la variabilité de leur frontière avec le bruit. Le notebook conserve aussi la part de documents assignés en commun, ainsi que la moyenne et l'écart-type du nombre de topics et du taux d'outliers.
+
+Le rang percentile de l'ARI moyen sur les documents assignés fournit le terme de stabilité du classement final :
+
+\[
+S_{\mathrm{final}}
+= 0{,}80S_{\mathrm{global}}
++ 0{,}20R_{\mathrm{stab}}.
+\]
+
+La stabilité intervient donc comme un contrôle sans effacer les critères initiaux. Les écarts-types restent descriptifs et les filtres appliqués à la grille ne sont pas réappliqués aux moyennes des six graines.
+
+\subsection{Justification du choix final à 33 topics}
+
+La première configuration du classement final produit huit topics avec la graine principale. Le modèle retenu est volontairement la deuxième configuration, qui en produit 33. Le tableau~\ref{tab:choix_bertopic} résume cet arbitrage.
+
+\begin{table}[H]
+    \centering
+    \caption{Comparaison entre le premier rang automatique et le modèle retenu}
+    \label{tab:choix_bertopic}
+    \begin{tabularx}{\textwidth}{Xcc}
+        \toprule
+        \textbf{Indicateur} & \textbf{Premier rang} & \textbf{Modèle retenu} \\
+        \midrule
+        \texttt{n\_neighbors} & 50 & 10 \\
+        \texttt{n\_components} & 15 & 20 \\
+        \texttt{min\_cluster\_size} & 20 & 20 \\
+        \texttt{min\_samples} & 15 & 5 \\
+        Topics avec la graine principale & 8 & 33 \\
+        Taux brut d'outliers & 62,5\,\% & 55,6\,\% \\
+        Cohérence $C_v$ & 0,494 & 0,452 \\
+        DBCV & 0,039 & 0,107 \\
+        ARI moyen sur les documents assignés & 0,937 & 0,839 \\
+        Score final & 0,761 & 0,743 \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+La solution à huit topics est plus stable et légèrement plus cohérente, mais elle rassemble le corpus dans des catégories très générales. Une telle granularité est peu adaptée à l'objectif de distinguer des motifs littéraires susceptibles d'évoluer au cours de la carrière de Zola. Le modèle à 33 topics offre un découpage plus fin, un taux d'outliers inférieur, un meilleur DBCV et une diversité lexicale élevée (0,958), tout en conservant un ARI de 0,839 sur les documents assignés dans les deux exécutions.
+
+Ce résultat doit néanmoins être nuancé : les documents assignés en commun représentent en moyenne 33,6\,\% du corpus et l'ARI incluant le bruit atteint 0,431. Sur les six graines, la configuration retenue produit en moyenne 38,3 topics (écart-type : 3,82) et 54,3\,\% d'outliers (écart-type : 2,72 points). Elle présente donc un noyau de clusters relativement stable, mais une variabilité réelle aux frontières avec le bruit. Le choix de la deuxième ligne n'affirme pas sa supériorité sur tous les critères : il assume un compromis entre robustesse quantitative et niveau de détail pertinent pour la question de recherche. Le score ordonne les possibilités sans se substituer à cet arbitrage scientifique.
+
+\subsection{Portée et limites du protocole}
+
+La combinaison de plusieurs métriques évite de faire reposer la sélection sur un indicateur unique, et la répétition sur plusieurs graines rend visible la sensibilité à l'initialisation. Le protocole demeure toutefois exploratoire : il n'existe pas de vérité de référence pour le « bon » nombre de topics, tandis que les seuils et pondérations traduisent des priorités de recherche. De plus, UMAP influence à la fois le clustering et deux indices de validation ; une cohérence lexicale élevée ne garantit pas, à elle seule, la pertinence littéraire d'un topic.
+
+Une limite supplémentaire concerne la longueur des unités textuelles. La configuration publiée de \texttt{sentence-camembert-base} fixe une longueur maximale de 128 tokens\footnote{\href{https://huggingface.co/dangvantuan/sentence-camembert-base/blob/main/sentence_bert_config.json}{Configuration Sentence-Transformers de \texttt{sentence-camembert-base}}, consultée le 28 juillet 2026.}. Or les paquets du corpus contiennent en moyenne 785 mots et le notebook ne les redécoupe pas avant l'encodage. Les embeddings représentent donc principalement leur début. Cette troncature devra être gardée à l'esprit lors de l'interprétation ; une amélioration ultérieure consisterait à encoder plusieurs sous-segments puis à agréger leurs vecteurs.
+
+Enfin, les taux d'outliers mentionnés ici sont les taux bruts produits par HDBSCAN avant toute réaffectation. Ils permettent de comparer les configurations dans des conditions identiques. Leur éventuel traitement appartient à l'entraînement du modèle final et ne doit pas être confondu avec la recherche d'hyperparamètres. La section suivante peut dès lors aborder les résultats à partir d'un modèle dont la procédure de sélection, le compromis et les limites ont été explicités.
