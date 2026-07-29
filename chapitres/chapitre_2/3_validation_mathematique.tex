@@ -1,0 +1,96 @@
+\section{Validation mathématique}
+
+Avant d'interpréter les topics et leur évolution dans le corpus, il convient d'évaluer la qualité de la partition sur laquelle repose l'analyse. Cette validation n'a pas pour objet de démontrer qu'il existerait une unique décomposition thématique correcte des romans de Zola. En l'absence de catégories de référence, elle relève d'une validation interne : plusieurs indicateurs vérifient la séparation géométrique des groupes, leur stabilité lorsque l'initialisation varie et la qualité de leur représentation lexicale.
+
+Deux états du modèle doivent être distingués. Le premier correspond à la partition brute produite par UMAP et HDBSCAN avec les paramètres sélectionnés dans le notebook \path{01_recherche_hyperparametres.ipynb}. Le second correspond au modèle effectivement utilisé pour les analyses, après réaffectation des documents initialement considérés comme atypiques et mise à jour de la représentation c-TF-IDF dans le notebook \path{02_exploration_modele.ipynb}. Les indicateurs ne sont pas tous recalculés à cette seconde étape ; les valeurs doivent donc être interprétées dans le périmètre exact où elles ont été obtenues.
+
+\subsection{Validation de la partition brute}
+
+Avec la graine principale fixée à 42, la configuration retenue produit naturellement 33 topics. Sur les 5\,327 segments du corpus, 2\,366 sont directement rattachés à l'un de ces groupes et 2\,961 reçoivent l'étiquette \texttt{-1}, soit un taux brut d'outliers de 55,6\,\%. Parmi les documents assignés, les topics contiennent entre 22 et 268 segments, avec une médiane de 53 ; le groupe le plus important représente 11,3\,\% des documents assignés. La partition n'est donc pas dominée par un topic unique, mais son taux d'observations atypiques montre que HDBSCAN adopte une définition exigeante des noyaux de densité.
+
+La séparation géométrique est d'abord mesurée par le coefficient de silhouette. Pour un document $i$, si $a(i)$ désigne sa distance moyenne aux autres documents de son topic et $b(i)$ la plus faible distance moyenne qui le sépare d'un autre topic, sa silhouette est définie par :
+
+\[
+s(i)=\frac{b(i)-a(i)}
+{\max\left(a(i),b(i)\right)}.
+\]
+
+Le score global est la moyenne des $s(i)$. Il est compris entre $-1$ et $1$ : une valeur positive signifie que les documents sont, en moyenne, plus proches de leur propre groupe que du groupe concurrent le plus proche. Dans le notebook d'optimisation, ce calcul est effectué avec la distance euclidienne dans l'espace UMAP, sur les documents assignés seulement et sur un échantillon reproductible d'au plus 2\,000 observations. La configuration retenue obtient un score de 0,380. Cette valeur positive atteste une structure identifiable, mais elle demeure intermédiaire : les topics sont séparés sans former des ensembles parfaitement isolés, ce qui est cohérent avec la continuité lexicale et narrative du corpus.
+
+La silhouette est complétée par le DBCV, mieux adapté aux clusters définis par la densité. Contrairement à la silhouette calculée ici, cet indice prend en compte l'ensemble de la projection UMAP, y compris les observations étiquetées \texttt{-1}. Sa valeur atteint 0,107. Un DBCV positif indique que, dans l'ensemble, la séparation entre les régions denses l'emporte sur leur dispersion interne. La valeur reste néanmoins modeste et ne saurait, prise isolément, suffire à valider la partition. L'intérêt du résultat réside dans la convergence de deux indicateurs construits selon des principes différents : tous deux sont positifs, même si aucun ne décrit une séparation parfaite.
+
+La robustesse à l'initialisation apporte un troisième contrôle. La configuration est réentraînée avec les six graines 1, 11, 35, 42, 73 et 89. Les partitions sont comparées par l'indice de Rand ajusté :
+
+\[
+\mathrm{ARI}
+=
+\frac{\mathrm{RI}-E[\mathrm{RI}]}
+{1-E[\mathrm{RI}]},
+\]
+
+où $\mathrm{RI}$ représente l'accord observé entre deux partitions et $E[\mathrm{RI}]$ l'accord attendu par hasard. Sur les documents assignés dans les deux exécutions comparées, l'ARI moyen vaut 0,839, avec un écart-type de 0,054. Ce niveau traduit une forte stabilité du noyau des clusters. Lorsque tous les documents sont inclus et que l'étiquette \texttt{-1} est traitée comme une catégorie, l'ARI moyen tombe toutefois à 0,431, avec un écart-type de 0,034. En outre, les documents assignés en commun ne représentent en moyenne que 33,6\,\% du corpus. Le modèle possède donc une structure centrale assez stable, tandis que la frontière entre les topics et le bruit reste plus sensible à la projection UMAP.
+
+\subsection{Réaffectation des documents atypiques}
+
+Pour que l'analyse temporelle porte sur l'ensemble du corpus, le second notebook réaffecte les 2\,961 documents initialement classés comme bruit. La stratégie \texttt{embeddings} de BERTopic compare leur représentation sémantique aux représentations des topics et les rattache au groupe le plus proche lorsque la similarité satisfait le seuil fixé. Six seuils, compris entre 0 et 0,50, sont comparés.
+
+Dans l'exécution enregistrée, les seuils de 0 à 0,40 produisent exactement le même résultat : les 2\,961 outliers sont réaffectés, les 33 topics sont conservés, le plus petit groupe comprend 38 documents et le plus grand 422, soit 7,9\,\% du corpus. Au seuil de 0,50, un seul document demeure atypique. Le seuil de 0,30 retenu conduit donc à une couverture de 100\,\% sans modifier le nombre de topics.
+
+Cette comparaison appelle une précaution méthodologique. Les résultats ne permettent pas d'identifier 0,30 comme un optimum numérique nettement supérieur aux autres seuils, puisque presque toute la plage testée conduit à la même partition. Il s'agit d'un choix opérationnel situé au milieu de la grille. La réaffectation rend possible une analyse exhaustive des romans et aboutit à une distribution moins dominée par le plus grand groupe ; elle ne constitue cependant pas, à elle seule, une nouvelle preuve de séparation géométrique. Le score de silhouette et le DBCV ne sont pas recalculés après cette opération. Les valeurs de 0,380 et 0,107 décrivent donc la partition brute de HDBSCAN, et non les assignations finales des 5\,327 documents.
+
+\subsection{Cohérence et diversité du modèle final}
+
+Après la réaffectation, la représentation lexicale des topics est reconstruite. Une courte liste de formes résiduelles propres au corpus est ajoutée aux mots exclus, puis les dix termes les mieux pondérés par le c-TF-IDF sont réestimés. Deux indicateurs évaluent cette représentation finale.
+
+La cohérence $C_v$ mesure dans quelle mesure les principaux mots d'un même topic apparaissent dans des contextes compatibles. Elle est calculée à partir des documents lemmatisés, du dictionnaire Gensim et des dix premiers mots de chacun des 33 topics. Elle passe de 0,452 pour le modèle brut à 0,471 après réaffectation et raffinement lexical, soit une progression de 0,019. Cette augmentation modérée indique que l'intégration des documents auparavant atypiques ne dégrade pas la cohérence des listes de mots et améliore légèrement leur proximité contextuelle.
+
+La diversité lexicale est définie par :
+
+\[
+D
+=
+\frac{\left|\bigcup_{k=1}^{K} W_k\right|}
+{\sum_{k=1}^{K}\left|W_k\right|},
+\]
+
+où $W_k$ désigne l'ensemble des dix mots représentatifs du topic $k$. Une valeur proche de 1 indique que les topics partagent peu de termes parmi leurs représentations principales. La diversité passe de 0,958 à 0,915. Cette diminution signifie que le raffinement final introduit davantage de vocabulaire commun entre les topics, mais plus de neuf positions lexicales sur dix restent associées à des termes distincts. Le modèle conserve ainsi une forte non-redondance tout en obtenant une cohérence légèrement meilleure.
+
+Le tableau~\ref{tab:validation_modele_bertopic} récapitule les deux étapes de l'évaluation. Le tiret signale qu'un indicateur géométrique n'a pas été recalculé après la réaffectation.
+
+\begin{table}[H]
+    \centering
+    \caption{Indicateurs de validation avant et après la réaffectation des outliers}
+    \label{tab:validation_modele_bertopic}
+    \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X
+        >{\centering\arraybackslash}p{2.6cm}
+        >{\centering\arraybackslash}p{2.4cm}}
+        \toprule
+        \textbf{Indicateur}
+        & \textbf{Partition brute}
+        & \textbf{Modèle final} \\
+        \midrule
+        Nombre de topics
+        & 33 & 33 \\
+        Documents assignés
+        & 2\,366 (44,4\,\%)
+        & 5\,327 (100\,\%) \\
+        Taille du plus petit topic
+        & 22 & 38 \\
+        Taille du plus grand topic
+        & 268 (11,3\,\%)
+        & 422 (7,9\,\%) \\
+        Silhouette dans l'espace UMAP
+        & 0,380 & Non recalculée \\
+        DBCV dans l'espace UMAP
+        & 0,107 & Non recalculé \\
+        Cohérence $C_v$
+        & 0,452 & 0,471 \\
+        Diversité lexicale
+        & 0,958 & 0,915 \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+Au total, la validation met en évidence un compromis plutôt qu'une supériorité absolue. La partition brute présente une séparation positive mais modérée, ainsi qu'un noyau thématique stable entre plusieurs initialisations. La réaffectation assure ensuite une couverture complète du corpus et conserve des groupes de taille raisonnablement équilibrée. Enfin, le modèle final améliore légèrement la cohérence contextuelle tout en maintenant une diversité lexicale élevée. Ces résultats autorisent l'emploi des 33 topics comme instruments d'exploration du corpus, à condition de garder à l'esprit la variabilité des documents situés aux frontières des clusters et le caractère interne, non inférentiel, de cette validation.
+
+
