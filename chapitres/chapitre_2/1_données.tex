@@ -2,35 +2,13 @@
 
 \subsection{Objectif et organisation du corpus}
 
-Ce chapitre prolonge l'analyse thématique statique menée au chapitre~1 en
-examinant la distribution chronologique des topics dans le corpus romanesque
-d'Émile Zola. Il ne s'agit pas d'un modèle thématique dynamique au sens
-génératif du terme : les dates de publication ne participent ni à la formation
-des groupes ni à leur représentation globale. Elles sont mobilisées après la
-sélection du modèle BERTopic afin d'observer la fréquence de topics fixes au
-fil de la carrière de l'écrivain. Cette distinction permet d'étudier les
-récurrences et les inflexions thématiques sans imposer au préalable une
-trajectoire temporelle aux documents.
+Ce chapitre prolonge l'analyse thématique statique menée au chapitre~1 en examinant la distribution chronologique des topics dans le corpus romanesque d'Émile Zola. Il ne s'agit pas d'un modèle thématique dynamique au sens génératif du terme : les dates de publication ne participent ni à la formation des groupes ni à leur représentation globale. Elles sont mobilisées après la sélection du modèle BERTopic afin d'observer la fréquence de topics fixes au fil de la carrière de l'écrivain. Cette distinction permet d'étudier les récurrences et les inflexions thématiques sans imposer au préalable une trajectoire temporelle aux documents.
 
-Le corpus est identique à celui du chapitre précédent\footnote{Voir le
-chapitre~1, section consacrée à la présentation des données.}. Chaque roman est
-associé à son année de publication, de manière à replacer les segments dans la
-chronologie de l'œuvre. Le prétraitement reprend également le protocole déjà
-décrit : segmentation des textes, suppression des mots vides et lemmatisation.
-Deux représentations complémentaires sont toutefois conservées. Les segments
-non lemmatisés servent au calcul des embeddings sémantiques, tandis que leur
-version lemmatisée est utilisée pour la représentation lexicale des topics et
-le calcul de la cohérence. La section suivante précise le rôle de ces deux
-entrées dans l'architecture de BERTopic.
+Le corpus est identique à celui du chapitre précédent\footnote{Voir le chapitre~1, section consacrée à la présentation des données.}. Chaque roman est associé à son année de publication, de manière à replacer les segments dans la chronologie de l'œuvre. Le prétraitement reprend également le protocole déjà décrit : segmentation des textes, suppression des mots vides et lemmatisation. Deux représentations complémentaires sont toutefois conservées. Les segments non lemmatisés servent au calcul des embeddings sémantiques, tandis que leur version lemmatisée est utilisée pour la représentation lexicale des topics et le calcul de la cohérence. La section suivante précise le rôle de ces deux entrées dans l'architecture de BERTopic.
 
 \subsection{Segmentation et statistiques descriptives}
 
-Les romans sont découpés en segments de quarante phrases, selon la même
-granularité que dans le chapitre~1. Ce choix produit des unités suffisamment
-longues pour conserver un contexte narratif, tout en permettant d'observer la
-circulation des regroupements thématiques à une échelle plus fine que celle du
-roman entier. Après exclusion des segments vides, le jeu de données comprend
-\(5\,327\) documents.
+Les romans sont découpés en segments de 128 mots. Ce choix est motivé par la nécessité d'avoir cette fenetres de mots pour le calcul des embeddings sémantiques avec le modèle \texttt{dangvantuan/sentence-camembert-base}. 
 
 \begin{table}[htbp]
     \centering
