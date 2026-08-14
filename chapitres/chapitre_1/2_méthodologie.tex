@@ -1,29 +1,26 @@
-\section{Analyse avec la NMF et K-means}
-Comme mentionné précédemment, deux méthodes d'analyse ont été utilisées pour identifier les thèmes dans les romans de Zola : la NMF (Non-negative Matrix Factorization) et K-means. Cette section présente ces deux méthodes et expose les choix retenus pour leur application au corpus préparé.
+\section{Analyse par NMF et K-means}
+
+Deux méthodes non supervisées ont été utilisées pour explorer les régularités thématiques du corpus : la factorisation en matrices non négatives (NMF) et K-means. La première fait apparaître des topics à partir de groupes de mots fréquemment associés, tandis que la seconde rassemble les segments présentant des profils lexicaux proches. Leur comparaison permet d'observer le corpus selon deux perspectives complémentaires.
 
 \subsection{La méthode NMF}
 
-La NMF est une technique de réduction de dimensionnalité qui permet d'extraire des thèmes à partir d'un corpus de textes. Elle fonctionne en factorisant la matrice terme-document en deux matrices non négatives : une matrice de thèmes et une matrice de poids. La matrice de thèmes contient les mots les plus représentatifs de chaque thème, tandis que la matrice de poids indique l'importance de chaque thème dans chaque document ou paquet de phrases.
+La NMF (\textit{Non-negative Matrix Factorization}) est une méthode de réduction dimensionnelle fréquemment utilisée pour l'exploration thématique. Elle décompose une matrice documents-termes en deux matrices non négatives : la première associe les segments aux topics, tandis que la seconde associe les topics aux termes qui les caractérisent.
 
-La présentation commence par la NMF, avant d'aborder le clustering par K-means comme méthode complémentaire.
+Chaque segment peut ainsi être rattaché à plusieurs topics avec des poids différents. Cette représentation est adaptée aux textes littéraires, dans lesquels plusieurs thèmes peuvent apparaître simultanément au sein d'un même passage.
 
-Après la préparation du corpus, la segmentation en paquets de phrases et la lemmatisation des textes, l'étape suivante consiste à appliquer une méthode de modélisation thématique. L'objectif est d'identifier automatiquement les grands thèmes présents dans les romans de Zola, à partir des termes les plus représentatifs de chaque segment textuel.
+\subsubsection{Création de la matrice documents-termes}
 
-Dans cette analyse, la méthode retenue est la NMF, pour \textit{Non-negative Matrix Factorization}. Cette méthode permet de décomposer une matrice terme-document en deux matrices plus simples : une matrice associant les segments de texte aux topics, et une matrice associant les topics aux termes les plus caractéristiques. La NMF est particulièrement adaptée à ce type d'analyse, car elle produit des résultats relativement interprétables : chaque topic peut être compris comme un ensemble de mots fortement associés entre eux.
+Les segments lemmatisés ont d'abord été transformés en une représentation numérique à l'aide d'une pondération TF-IDF\footnote{Le TF-IDF (\textit{term frequency-inverse document frequency}) mesure l'importance d'un terme dans un document en tenant compte de sa fréquence dans l'ensemble du corpus. Le calcul a été réalisé avec la bibliothèque \texttt{scikit-learn}.}. Cette pondération valorise les termes caractéristiques d'un segment tout en réduisant l'influence des mots présents dans une grande partie du corpus.
 
-\subsubsection{Création de la matrice terme-document}
+Deux paramètres ont été utilisés pour filtrer le vocabulaire. Le paramètre \texttt{min\_df=3} écarte les termes présents dans moins de trois segments, considérés comme trop rares pour faire apparaître des régularités thématiques. À l'inverse, \texttt{max\_df=0.8} retire les termes présents dans plus de 80~\% des segments, qui sont trop fréquents pour être réellement discriminants\footnote{Le code du vectoriseur est disponible sur le dépôt GitHub associé au mémoire.}.
 
-La première étape consiste à transformer les textes lemmatisés en une représentation numérique exploitable par le modèle. Pour cela, une matrice terme-document a été construite à l'aide d'une pondération TF-IDF\footnote{Utilisée via la bibliothèque \texttt{scikit-learn}.}. Cette méthode permet de donner un poids plus important aux termes caractéristiques d'un segment, tout en réduisant l'influence des mots trop fréquents dans l'ensemble du corpus.
-
-Les paramètres \texttt{min\_df} et \texttt{max\_df} jouent un rôle important dans la qualité de la matrice obtenue. Le paramètre \texttt{min\_df=3} permet d'exclure les mots qui apparaissent dans moins de trois segments. Ces mots sont généralement trop rares pour contribuer efficacement à l'identification de thèmes récurrents. À l'inverse, le paramètre \texttt{max\_df=0.8} exclut les termes présents dans plus de 80 \% des segments, car ils sont trop fréquents pour être réellement discriminants\footnote{Le vectoriseur est disponible en annexe.}.
-
-Ce choix relève d'un arbitrage méthodologique. Plusieurs combinaisons ont été testées, puis évaluées à partir de la qualité des mots conservés et de la cohérence des premiers topics obtenus. L'objectif n'était donc pas seulement de réduire la taille de la matrice, mais surtout de conserver les termes les plus utiles pour l'analyse thématique. La matrice finale sert ensuite de base à l'application du modèle NMF.
+Plusieurs configurations ont été expérimentées. Les paramètres retenus offrent un compromis entre la réduction du vocabulaire et la conservation des termes utiles à l'interprétation. La matrice obtenue sert ensuite d'entrée au modèle NMF.
 
 \subsubsection{Choix du nombre de topics}
 
-Le choix du nombre de topics constitue une étape importante dans une analyse par NMF. Un nombre trop faible de topics risque de produire des catégories trop générales, dans lesquelles plusieurs thèmes distincts se trouvent regroupés. À l'inverse, un nombre trop élevé peut conduire à une fragmentation excessive des résultats, avec des topics trop proches les uns des autres ou difficiles à interpréter.
+Le nombre de topics influence directement la précision des résultats. Une valeur trop faible produit des catégories très générales, tandis qu'une valeur trop élevée fragmente les thèmes et multiplie les topics proches ou difficiles à interpréter.
 
-Afin d'orienter ce choix, une méthode du coude a d'abord été utilisée\footnote{Code visible en annexe.}. Cette méthode consiste à entraîner plusieurs modèles NMF avec différents nombres de topics, puis à observer l'évolution de l'erreur de reconstruction. L'objectif est d'identifier un éventuel seuil à partir duquel l'ajout de nouveaux topics n'améliore plus fortement la qualité de reconstruction du modèle.
+La méthode du coude a d'abord été utilisée pour orienter ce choix\footnote{Le code correspondant est présenté en annexe.}. Plusieurs modèles ont été entraînés avec un nombre croissant de topics, puis comparés à partir de leur erreur de reconstruction. Un coude clairement marqué aurait indiqué qu'au-delà d'un certain seuil, l'ajout de nouveaux topics améliorait peu la reconstruction de la matrice.
 
 \begin{figure}[H]
     \centering
@@ -32,9 +29,9 @@ Afin d'orienter ce choix, une méthode du coude a d'abord été utilisée\footno
     \label{fig:methode_du_coude_nmf_2_40}
 \end{figure}
 
-La première visualisation présente l'évolution de l'erreur de reconstruction pour un nombre de topics compris entre 2 et 40. On observe une diminution régulière de l'erreur lorsque le nombre de topics augmente. Cette baisse est attendue : plus le modèle dispose de topics, plus il peut reconstruire finement la matrice terme-document. Cependant, la courbe ne présente pas de rupture nette permettant d'identifier un coude évident. Le critère quantitatif ne suffit donc pas, à lui seul, à déterminer un nombre optimal de topics.
+Comme le montre la figure~\ref{fig:methode_du_coude_nmf_2_40}, l'erreur diminue régulièrement lorsque le nombre de topics augmente. Cette évolution est attendue : un modèle disposant de davantage de topics peut reconstruire plus précisément la matrice initiale. La courbe ne présente cependant aucune rupture suffisamment nette pour désigner une valeur optimale.
 
-Une seconde visualisation a été produite en resserrant l'observation sur une zone plus restreinte, comprise entre 20 et 39 topics. Ce zoom permet d'examiner plus précisément la partie de la courbe dans laquelle plusieurs valeurs candidates pouvaient être envisagées.
+Une seconde visualisation a donc été produite entre 20 et 39 topics afin d'examiner plus précisément cette partie de la courbe.
 
 \begin{figure}[H]
     \centering
@@ -43,54 +40,41 @@ Une seconde visualisation a été produite en resserrant l'observation sur une z
     \label{fig:methode_du_coude_nmf_20_39}
 \end{figure}
 
-Ce second graphique confirme l'absence de seuil clairement marqué. L'erreur de reconstruction continue de diminuer de manière progressive, sans stabilisation brutale ni changement de pente suffisamment net pour imposer une valeur unique. Le choix du nombre de topics ne peut donc pas reposer uniquement sur la méthode du coude.
+Ce second graphique confirme l'absence de coude clairement identifiable. Le choix final ne pouvait donc pas reposer uniquement sur l'erreur de reconstruction. Plusieurs modèles, comprenant notamment 10, 15, 20, 29, 30 et 35 topics, ont alors été comparés à partir des mots caractéristiques de chaque topic, de leur cohérence interne et de leur lisibilité.
 
-Le choix final a ainsi été complété par une analyse qualitative des résultats. Plusieurs valeurs ont été testées, notamment 10, 15, 20, 30 et 35 topics. Les modèles obtenus ont été comparés à partir des mots caractéristiques de chaque topic, de leur cohérence interne et de leur capacité à correspondre à des thèmes interprétables dans l'œuvre de Zola. Dans cette perspective, le choix de 29 topics a été retenu comme un compromis entre précision, lisibilité et stabilité interprétative.
+Le modèle à 29 topics a finalement été retenu. Il offre un niveau de détail suffisant pour distinguer plusieurs ensembles thématiques sans produire une fragmentation excessive. Ce choix reste néanmoins empirique : il correspond au meilleur compromis observé dans le cadre de cette étude, et non à une valeur optimale démontrée de manière absolue.
 
-Ce choix a également été mis en relation avec l'analyse par K-means. Le nombre de clusters retenu pour K-means a été fixé à 29 afin de permettre une comparaison directe entre les deux méthodes. Cette seconde approche ne sert pas à prouver définitivement que 29 est le nombre optimal de topics, mais elle permet de vérifier si une structuration thématique comparable apparaît lorsque les segments sont regroupés selon une logique différente. Autrement dit, K-means joue ici un rôle de validation complémentaire : si certains motifs apparaissent à la fois dans les topics NMF et dans les clusters K-means, cela renforce leur pertinence pour l'analyse du corpus.
-\subsubsection{Paramétrage du modèle NMF}
+\subsubsection{Paramétrage du modèle}
 
-Après plusieurs essais, le modèle final a été construit avec 29 topics. Cette valeur a été retenue, car elle permettait d'obtenir un niveau de détail suffisant, sans produire une fragmentation trop importante des thèmes ni introduire trop de bruit. Les topics obtenus correspondent à des ensembles thématiques distincts, comme le monde ouvrier, la religion, la famille, la finance, la guerre, le commerce, la médecine ou encore l'espace domestique, comme nous le verrons dans la section consacrée aux résultats.
+Le modèle final utilise le paramètre \texttt{n\_components=29}. Le paramètre \texttt{random\_state=42} assure la reproductibilité du traitement. L'initialisation \texttt{nndsvda}\footnote{L'initialisation \texttt{nndsvda} est une variante de NNDSVD dans laquelle les valeurs nulles sont remplacées par la moyenne de la matrice. Voir la documentation de \texttt{scikit-learn}.} fournit un point de départ stable, tandis que le solveur \texttt{cd}, pour \textit{coordinate descent}, optimise progressivement la factorisation.
 
-Le paramètre \texttt{n\_components=29} correspond au nombre de topics recherchés. Le paramètre \texttt{random\_state=42} permet d'assurer la reproductibilité des résultats. L'initialisation \texttt{nndsvda}\footnote{L'initialisation \texttt{nndsvda} correspond à une variante de NNDSVD dans laquelle les zéros sont remplacés par la moyenne de la matrice. Voir la documentation de \texttt{scikit-learn}.} est adaptée à la NMF, car elle fournit une initialisation stable à partir de la structure de la matrice. Le solveur \texttt{cd}, pour \textit{coordinate descent}, est utilisé pour optimiser la factorisation.
+La matrice \texttt{W} contient le poids de chacun des 29 topics dans chaque segment. La matrice \texttt{H} indique, pour sa part, le poids des termes dans chaque topic. L'examen des termes les mieux pondérés permet ensuite d'interpréter et de nommer les topics.
 
-La matrice \texttt{W} contient les poids des topics pour chaque segment du corpus. Autrement dit, elle indique dans quelle mesure chaque segment est associé à chacun des 29 topics. La matrice \texttt{H}, quant à elle, contient les poids des mots pour chaque topic. Elle permet donc d'identifier les termes les plus représentatifs de chaque thème.
+\subsubsection{Portée et limites de la NMF}
 
-\subsubsection{Limites de l’approche}
+La NMF fournit une première cartographie des régularités lexicales du corpus. Elle permet notamment de faire apparaître des ensembles liés au travail, à la religion, à la famille, à l'argent, à la guerre, au commerce, à la médecine ou encore à l'espace domestique.
 
-L’utilisation de la NMF présente plusieurs avantages, notamment sa lisibilité et sa capacité à produire des topics relativement interprétables. Cependant, cette méthode comporte aussi des limites. Le choix du nombre de topics reste en partie subjectif, surtout lorsque la méthode du coude ne permet pas d’identifier une valeur optimale claire. Dans cette analyse, le choix de 29 topics repose donc sur un compromis entre précision, lisibilité et cohérence interprétative. La validation humaine des résultats est donc essentielle pour s'assurer que les topics produits correspondent à des thèmes réels et pertinents dans l'œuvre de Zola.
+Les résultats restent toutefois dépendants des choix réalisés en amont : nettoyage, segmentation, lemmatisation, catégories grammaticales conservées, liste d'exclusion, paramètres du vectoriseur et nombre de topics. La modélisation thématique ne constitue donc pas une procédure entièrement automatique, mais une démarche exploratoire associant calcul statistique et interprétation humaine.
 
-De plus, les noms attribués aux topics résultent d’une interprétation humaine. Deux personnes pourraient parfois proposer des intitulés légèrement différents pour un même groupe de mots. Il est donc important de considérer ces noms comme des outils d’analyse, et non comme des catégories fixes ou définitives. Cette subjectivité ne remet pas en cause la validité de l’analyse, mais elle souligne l’importance d’une approche critique et réflexive dans l’interprétation des résultats.
+La nomination des topics comporte également une part de subjectivité. Deux lecteurs pourraient proposer des intitulés différents pour un même groupe de termes. Ces noms doivent par conséquent être compris comme des outils d'interprétation et non comme des catégories définitives.
 
-Enfin, les résultats dépendent fortement des choix effectués en amont : nettoyage du texte, lemmatisation, liste de mots à exclure, taille des segments, paramètres du vectoriseur et nombre de topics. La modélisation thématique ne doit donc pas être comprise comme une méthode entièrement automatique, mais comme un processus exploratoire qui combine traitement statistique et interprétation qualitative avec validation humaine à chaque étape.
-
-\subsubsection{Bilan méthodologique}
-
-Cette étape de modélisation par NMF permet d'obtenir une première cartographie thématique du corpus romanesque de Zola. Elle fournit une base quantitative pour observer des régularités lexicales qui seront ensuite interprétées dans la section consacrée aux résultats.
-
-La NMF constitue donc un outil pertinent pour explorer les thèmes récurrents dans un corpus littéraire volumineux. Elle ne remplace pas l’analyse littéraire, mais elle permet de faire apparaître des régularités lexicales et thématiques qui peuvent ensuite être interprétées plus finement. Dans le cadre de cette étude, elle sert à établir une base quantitative pour l’analyse des thèmes présents dans les romans de Zola.
+Enfin, puisque le prétraitement conserve principalement les noms et les adjectifs, cette analyse porte avant tout sur le contenu thématique. Elle ne permet pas, à elle seule, de distinguer ce qui relève du naturalisme, de la signature personnelle de Zola ou des sujets particuliers de ses romans. Cette distinction sera étudiée à l'aide du corpus comparatif et de la classification automatique.
 
 \subsection{La méthode K-means}
 
-Après l'application de la NMF, une seconde méthode a été utilisée afin de compléter l'analyse thématique du corpus : le clustering par K-means. Contrairement à la NMF, qui cherche à décomposer la matrice terme-document en topics latents, K-means vise à regrouper les segments textuels en ensembles homogènes à partir de leur proximité lexicale. L'objectif n'est donc pas exactement le même : la NMF permet d'identifier des thèmes sous forme de combinaisons de mots, tandis que K-means permet de regrouper les paquets de phrases qui présentent des profils lexicaux similaires.
+K-means a été utilisé comme une seconde manière d'explorer la structure du corpus. Contrairement à la NMF, qui représente chaque segment comme une combinaison de plusieurs topics, K-means attribue chaque segment à un seul cluster en fonction de sa proximité lexicale avec les autres segments.
 
-Cette seconde méthode a été utilisée comme un outil complémentaire de comparaison et de validation. Elle permet de vérifier si les regroupements produits par la NMF correspondent également à des ensembles cohérents lorsque l'on applique une méthode de clustering non supervisée. Dans le cadre de cette analyse, chaque paquet de phrases constitue une unité d'observation, représentée numériquement par une matrice TF-IDF. Les clusters obtenus correspondent donc à des groupes de segments partageant des termes caractéristiques.
+L'objectif est de déterminer si les segments peuvent être regroupés en ensembles cohérents et si certains de ces regroupements présentent des ressemblances avec les topics obtenus par la NMF. Il ne s'agit pas d'une validation indépendante, puisque les deux méthodes utilisent la même représentation TF-IDF, mais d'une triangulation exploratoire fondée sur deux modes de structuration différents.
 
 \subsubsection{Préparation de la matrice TF-IDF}
 
-Comme pour la NMF, la première étape consiste à transformer les textes lemmatisés en une représentation numérique. La matrice utilisée pour le K-means est construite à partir des segments lemmatisés du corpus. Le même type de vectorisation TF-IDF et les mêmes paramètres ont été conservés afin d'assurer une cohérence méthodologique entre les deux approches\footnote{Voir la section consacrée à la préparation de la matrice terme-document dans l'approche NMF.}.
-
-Ce choix permet de travailler sur une matrice plus lisible et plus pertinente pour le clustering. Le but n'est pas seulement de réduire le nombre de dimensions, mais aussi de conserver les mots qui participent réellement à la différenciation des segments. Cette étape est essentielle, car la qualité des clusters dépend directement de la qualité de la représentation vectorielle utilisée.
+K-means est appliqué à la même matrice TF-IDF que la NMF. Les textes, la lemmatisation, la liste d'exclusion et les paramètres \texttt{min\_df} et \texttt{max\_df} restent donc identiques\footnote{Voir la section consacrée à la création de la matrice documents-termes.}. Ce choix garantit que les différences observées proviennent principalement du fonctionnement des deux méthodes et non d'un changement de représentation du corpus.
 
 \subsubsection{Recherche du nombre de clusters}
 
-Le choix du nombre de clusters est une étape centrale dans l'utilisation de K-means. Un nombre trop faible de clusters risque de produire des groupes trop généraux, dans lesquels plusieurs thèmes différents seraient mélangés. À l'inverse, un nombre trop élevé peut produire des groupes trop fragmentés, difficiles à interpréter ou très proches les uns des autres, nous avons donc le meme probleme qu'avec l'approche NMF.
+Comme pour la NMF, le nombre de groupes doit être fixé avant l'entraînement du modèle. Une valeur trop faible risque de réunir des motifs distincts, tandis qu'une valeur trop élevée peut produire des clusters très proches ou difficiles à interpréter.
 
-Afin d'orienter ce choix, plusieurs valeurs de \texttt{k} ont été testées. Pour chaque valeur comprise entre 2 et 40, un modèle K-means a été entraîné, puis évalué à l'aide du score de silhouette\footnote{Peter J. Rousseeuw, « Silhouettes: A graphical aid to the interpretation and validation of cluster analysis », \textit{Journal of Computational and Applied Mathematics}, vol. 20, 1er novembre 1987, p. 53--65.}.
-
-Ce score mesure la qualité de la séparation entre les clusters : plus il est élevé, plus les segments sont proches des éléments de leur propre cluster et éloignés des autres groupes.
-
-Une visualisation des scores de silhouette a ensuite été produite afin d'observer l'évolution de la qualité du clustering selon le nombre de clusters.
+Plusieurs valeurs de \texttt{k}, comprises entre 2 et 40, ont été évaluées à l'aide du score de silhouette\footnote{Peter J. Rousseeuw, « Silhouettes: A Graphical Aid to the Interpretation and Validation of Cluster Analysis », \textit{Journal of Computational and Applied Mathematics}, vol.~20, 1987, p.~53--65.}. Ce score mesure à la fois la cohésion interne des clusters et leur séparation : une valeur élevée indique que les segments sont proches des éléments de leur propre groupe et éloignés des autres groupes.
 
 \begin{figure}[H]
     \centering
@@ -99,25 +83,26 @@ Une visualisation des scores de silhouette a ensuite été produite afin d'obser
     \label{fig:silhouette_kmeans}
 \end{figure}
 
-Dans cette analyse, le score de silhouette fournit une indication quantitative, mais il ne suffit pas à lui seul à déterminer le nombre de clusters à retenir. Comme pour la NMF, le choix final repose donc sur un compromis entre indicateurs statistiques, lisibilité des résultats et cohérence interprétative. Le nombre de 29 clusters a été retenu afin de permettre une comparaison directe avec les 29 topics issus de la NMF, tout en conservant un niveau de détail suffisant pour distinguer les principaux motifs thématiques du corpus. De plus, le score de silhouette reste relativement stable autour de cette valeur, ce qui indique que les clusters obtenus sont globalement cohérents. Le choix de 29 topics pour la NMF et de 29 clusters pour K-means permet donc d'obtenir une structuration thématique comparable entre les deux méthodes, facilitant ainsi l'interprétation des résultats et la mise en évidence de régularités dans le corpus. Il y a donc une validation croisée entre les deux approches, qui renforce la confiance dans les regroupements identifiés (29 topics et 29 clusters).
+La figure~\ref{fig:silhouette_kmeans} fournit une indication quantitative sur la structure du corpus, mais elle ne désigne pas à elle seule une valeur incontestable. Le modèle final a été fixé à 29 clusters afin de conserver un niveau de granularité comparable aux 29 topics de la NMF.
 
-\subsubsection{Entraînement du modèle K-means}
+Ce choix facilite la confrontation des deux méthodes, mais il ne signifie pas qu'elles convergent indépendamment vers le nombre 29. Les 29 clusters ont été retenus en partie pour rendre la comparaison possible. L'analyse porte donc principalement sur les ressemblances et les différences entre les motifs lexicaux obtenus, et non sur une validation du nombre exact de groupes.
 
-Le modèle K-means final a été entraîné avec 29 clusters. Le paramètre \texttt{random\_state=42} permet d'assurer la reproductibilité des résultats, tandis que le paramètre \texttt{n\_init=10} indique que l'algorithme est lancé plusieurs fois avec des initialisations différentes afin de retenir la meilleure solution.
+\subsubsection{Entraînement du modèle}
 
-Chaque segment du corpus reçoit ainsi un numéro de cluster après l'entraînement du modèle. L'ajout de \texttt{+ 1} permet de numéroter les clusters à partir de 1 plutôt qu'à partir de 0, ce qui rend les résultats plus lisibles dans les tableaux et les visualisations. Chaque paquet de phrases est donc associé à un groupe thématique déterminé par sa proximité avec les autres segments du corpus.
+Le modèle final est entraîné avec \texttt{n\_clusters=29}. Le paramètre \texttt{random\_state=42} garantit la reproductibilité, tandis que \texttt{n\_init=10} lance l'algorithme avec plusieurs initialisations et conserve la meilleure solution.
 
-\subsubsection{Limites de l'approche par K-means}
+À l'issue de l'entraînement, chaque segment est rattaché à l'un des 29 clusters. Les termes les plus caractéristiques de chaque groupe et les segments qui lui sont associés servent ensuite à interpréter son contenu.
 
-L'utilisation de K-means présente plusieurs limites qu'il faut prendre en compte. Tout d'abord, la méthode impose une appartenance unique de chaque segment à un cluster. Or, dans un texte littéraire, un même passage peut contenir plusieurs thèmes simultanément. Un segment peut par exemple associer la famille, l'argent et la souffrance sociale, mais K-means l'attribue malgré tout à un seul groupe. Cette contrainte rend la méthode moins souple que la NMF pour représenter la complexité thématique des textes.
+\subsubsection{Portée et limites de K-means}
 
-Ensuite, le choix du nombre de clusters reste en partie subjectif. Le score de silhouette fournit une indication utile, mais il ne suffit pas toujours à identifier une valeur optimale. Dans cette analyse, le choix de 29 clusters repose donc sur un arbitrage méthodologique : il permet de conserver un niveau de détail comparable à celui de la NMF, tout en produisant des catégories suffisamment interprétables. Néanmoins, les deux choix retenant 29 topics et 29 clusters ne sont pas nécessairement les seuls possibles, et d'autres valeurs pourraient également être défendues selon les critères retenus mais il y a quand meme une tendance à la convergence des deux méthodes sur ce nombre de regroupements au vu des resultats obtenu.
+La principale limite de K-means tient à son fonctionnement exclusif : chaque segment appartient à un seul cluster. Or, un passage littéraire peut faire intervenir plusieurs thèmes simultanément, par exemple la famille, l'argent et la souffrance sociale. La NMF représente plus facilement ce type de coexistence, puisqu'elle attribue plusieurs poids thématiques à un même segment.
 
-Une autre limite concerne la sensibilité de K-means à la représentation vectorielle. Les clusters dépendent fortement de la matrice TF-IDF, des choix de lemmatisation, de la liste de mots exclus et des paramètres \texttt{min\_df} et \texttt{max\_df}. Une modification de ces choix peut modifier la structure des clusters obtenus, comme cela peut également être le cas avec la NMF. Les résultats doivent donc être compris comme une cartographie exploratoire du corpus, et non comme une classification définitive.
+Les résultats de K-means sont également sensibles à la représentation TF-IDF et aux étapes de préparation du corpus. Une modification de la segmentation, de la lemmatisation ou du vocabulaire retenu pourrait produire une organisation différente. Comme pour la NMF, les clusters doivent donc être considérés comme une cartographie exploratoire plutôt que comme une classification définitive.
 
-Enfin, comme pour la NMF, la nomination des clusters repose sur une interprétation humaine. Les intitulés attribués aux clusters et aux grandes familles de motifs sont construits à partir des mots les plus représentatifs et de l'observation des segments. Cette étape qualitative est nécessaire pour donner du sens aux résultats, mais elle introduit aussi une part de subjectivité.
+Enfin, leur nomination repose sur l'examen des termes et des segments les plus représentatifs. Cette interprétation humaine est nécessaire pour donner un sens littéraire aux groupes obtenus, mais elle introduit une part de subjectivité qui doit rester explicite.
 
 \subsubsection{Bilan méthodologique}
-L'ajout d'une classification hiérarchique sur les centres des clusters permet également d'organiser les résultats en grandes familles de motifs. Cette étape rend l'analyse plus lisible, car elle permet de passer de 29 clusters détaillés à cinq ensembles thématiques plus généraux, qui seront interprétés dans la section consacrée aux résultats.
 
-Après la présentation des deux méthodes, la section suivante expose les principaux résultats obtenus, d'abord pour la NMF, puis pour K-means.
+La NMF et K-means proposent deux lectures complémentaires du corpus. La NMF décrit chaque segment comme une combinaison de topics, tandis que K-means construit une partition unique fondée sur la proximité lexicale. La comparaison de leurs résultats permet de repérer des motifs récurrents, mais ne constitue pas une validation indépendante puisque les deux méthodes reposent sur les mêmes données et la même matrice TF-IDF.
+
+Une classification hiérarchique appliquée aux centres des clusters permet enfin de rassembler les 29 groupes en cinq familles thématiques plus générales. Cette organisation facilite la lecture des résultats, présentés dans la section suivante.

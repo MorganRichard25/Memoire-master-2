@@ -2,85 +2,73 @@
 
 \section{Comparaison des deux méthodes}
 
-Cette section compare les résultats obtenus avec la NMF et avec K-means. Les deux méthodes ont été appliquées au même corpus préparé, mais elles ne produisent pas le même type de sortie : la NMF fait apparaître des topics latents, tandis que K-means regroupe les segments en clusters lexicalement proches. La comparaison permet donc de vérifier si les structures thématiques identifiées par une méthode se retrouvent, au moins en partie, dans l'autre.
+La NMF et K-means ont été appliqués au même corpus et à la même représentation TF-IDF, mais ils n'en proposent pas la même lecture. La NMF fait apparaître des topics latents auxquels chaque segment est associé avec des poids variables. K-means répartit au contraire les segments en groupes lexicaux distincts. Leur comparaison permet d'identifier les régularités qui se retrouvent dans les deux organisations du corpus, ainsi que les différences liées au fonctionnement de chaque méthode.
 
-\subsection{Différences entre NMF et K-means}
+\subsection{Deux représentations complémentaires}
 
-La principale différence entre les deux méthodes tient à la manière dont elles attribuent les thèmes aux segments. La NMF associe chaque segment à plusieurs topics, avec des poids plus ou moins élevés. Elle autorise donc une lecture graduelle : un même segment peut relever à la fois de plusieurs dimensions thématiques, par exemple la famille, l'argent ou le monde domestique.
+La NMF offre une représentation graduelle des thèmes. Un même segment peut être associé à plusieurs topics, par exemple la famille, l'argent et l'espace domestique, avec une importance différente pour chacun. Cette souplesse correspond assez bien à la complexité des textes littéraires, dans lesquels plusieurs dimensions thématiques peuvent coexister.
 
-K-means fonctionne différemment. Chaque segment est attribué à un seul cluster, c'est-à-dire au groupe dont il est le plus proche dans l'espace vectoriel. Cette méthode produit donc une classification plus nette, mais aussi plus rigide. Elle permet d'identifier des groupes de segments cohérents sur le plan lexical, mais elle rend moins visible la coexistence de plusieurs thèmes dans un même passage.
+K-means produit une organisation plus catégorielle : chaque segment est rattaché à un seul cluster, celui dont il est le plus proche dans l'espace vectoriel. Cette méthode fait ainsi apparaître des groupes lexicaux plus nettement séparés, mais rend moins visible la coexistence de plusieurs thèmes dans un même passage.
 
-Ces deux approches ne doivent donc pas être considérées comme concurrentes. La NMF permet d'observer la présence simultanée de plusieurs topics dans les segments, tandis que K-means propose une organisation plus catégorielle du corpus. Leur comparaison est utile précisément parce qu'elles donnent deux lectures différentes d'un même ensemble de textes.
+Les deux approches ne sont donc pas concurrentes. La NMF décrit la composition thématique des segments, tandis que K-means propose une partition générale du corpus. Leur rapprochement constitue une triangulation exploratoire, mais pas une validation indépendante, puisque les deux modèles utilisent les mêmes données et la même matrice TF-IDF.
 
-\subsection{Comparaison lexicale des topics NMF et des clusters K-means}
+\subsection{Convergences lexicales et thématiques}
 
-Une première comparaison peut être réalisée à partir des mots les plus caractéristiques des topics NMF et des clusters K-means. Les heatmaps suivantes permettent d'observer la structure lexicale produite par les deux méthodes. Elles montrent quels termes contribuent le plus fortement à chaque regroupement et permettent de repérer les proximités entre les champs lexicaux obtenus.
+La comparaison des termes caractéristiques fait apparaître plusieurs ensembles communs aux topics NMF et aux clusters K-means. Les deux méthodes repèrent notamment des motifs liés au travail et à la mine, à l'argent et à la finance, à la religion, à la famille, à la guerre, au commerce, aux espaces urbains et à la vie domestique.
+
+Ces rapprochements montrent que certains champs lexicaux occupent une place structurante dans le corpus. Ils ne signifient toutefois pas que les résultats sont identiques. Un topic NMF peut réunir plusieurs dimensions que K-means répartit entre différents clusters. À l'inverse, un cluster peut rassembler des segments lexicalement proches dont l'interprétation thématique reste assez large.
+
+La convergence entre les méthodes doit donc être appréciée à l'échelle des grands motifs plutôt qu'à travers une correspondance exacte entre chaque topic et chaque cluster. Comme les deux analyses reposent sur le même prétraitement, elle ne suffit pas à prouver l'existence de catégories thématiques objectives. Elle indique néanmoins que certains motifs résistent au changement de méthode de regroupement.
+
+\subsection{Distribution des topics NMF par œuvre}
+
+Pour étudier la répartition des topics dans les romans, chaque segment a été associé au topic possédant le poids NMF le plus élevé. Une table croisée entre les œuvres et les topics dominants a ensuite été construite et normalisée par ligne. Cette normalisation indique, pour chaque roman, la proportion de segments dominés par chacun des 29 topics.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/chapitre_1/resultats/proportion_segment_headmap_nmf.png}
-    \caption{Heatmap des poids des mots dans les topics NMF}
-    \label{fig:heatmap_nmf}
+    \caption{Proportion des segments par topic NMF dominant et par œuvre}
+    \label{fig:distribution_topics_nmf_oeuvre}
 \end{figure}
 
-La heatmap des topics NMF met en évidence une organisation thématique relativement lisible. Certains topics sont associés à des champs lexicaux spécialisés, comme la mine, la finance, la religion, la guerre, le commerce ou le monde ferroviaire. D'autres renvoient à des motifs plus transversaux, comme la famille, l'espace domestique, les sentiments, la maladie ou les relations sociales. Cette visualisation confirme que la NMF produit des regroupements interprétables à partir des poids des mots dans chaque topic.
+La figure~\ref{fig:distribution_topics_nmf_oeuvre} fait apparaître des associations attendues entre certaines œuvres et certains thèmes. Le monde de la mine et du travail ouvrier occupe ainsi une place importante dans \textit{Germinal}, tandis que la finance ressort davantage dans \textit{L'Argent}. Le commerce est particulièrement visible dans \textit{Au Bonheur des dames}, et la guerre dans \textit{La Débâcle}.
+
+D'autres topics sont répartis entre plusieurs romans et correspondent à des motifs plus transversaux, comme la famille, les relations sociales, la religion ou l'espace domestique. La normalisation par œuvre évite que les romans les plus longs soient automatiquement surreprésentés et facilite ainsi la comparaison de leurs profils thématiques.
+
+Cette visualisation repose néanmoins sur le topic dominant de chaque segment. Elle simplifie donc la représentation fournie par la NMF, puisqu'elle ne montre pas les topics secondaires également présents dans les passages.
+
+\subsection{Distribution des clusters K-means par œuvre}
+
+Une seconde heatmap présente la répartition des clusters K-means dans chaque roman. Comme pour la NMF, les valeurs sont exprimées sous forme de proportions afin de neutraliser autant que possible les différences de longueur entre les œuvres.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/chapitre_1/resultats/headmap_kmeans.png}
-    \caption{Heatmap des poids des mots dans les clusters K-means}
-    \label{fig:heatmap_kmeans}
+    \caption{Distribution des clusters K-means par œuvre}
+    \label{fig:distribution_clusters_kmeans_oeuvre}
 \end{figure}
 
-La heatmap des clusters K-means présente une structure comparable, mais avec une logique plus catégorielle. Les mots caractéristiques sont rattachés à des groupes de segments plutôt qu'à des topics latents. On retrouve néanmoins plusieurs ensembles proches de ceux observés avec la NMF : la mine et le monde ouvrier, la bourse et l'argent, le clergé et la religion, la guerre, la ville, le commerce, l'école ou encore l'espace domestique.
+La figure~\ref{fig:distribution_clusters_kmeans_oeuvre} fait apparaître plusieurs associations proches de celles obtenues par la NMF. \textit{Germinal} se distingue par le cluster consacré à la mine, aux ouvriers et à la grève. \textit{L'Argent} est fortement associé à la finance et aux affaires, tandis que \textit{La Débâcle} se caractérise par le vocabulaire des soldats, de l'armée et de la guerre. Le cluster lié au magasin, à la vente et aux clients est particulièrement présent dans \textit{Au Bonheur des dames}.
 
-La comparaison des deux heatmaps montre donc une convergence partielle entre les méthodes. Certains champs lexicaux apparaissent de manière stable, indépendamment du modèle utilisé. Cette stabilité renforce leur pertinence pour l'analyse du corpus : lorsqu'un même ensemble lexical apparaît à la fois dans les topics NMF et dans les clusters K-means, il devient plus difficile de l'attribuer à un simple effet du modèle. Il s'agit plutôt d'un motif fortement structurant dans le corpus.
+Ces rapprochements confirment que plusieurs œuvres possèdent un profil lexical fortement lié à leur univers narratif. La comparaison révèle également des différences : K-means impose un seul cluster à chaque segment, alors que la NMF peut y détecter plusieurs composantes thématiques. La distribution obtenue par K-means paraît donc généralement plus tranchée.
 
-Cependant, les deux heatmaps ne doivent pas être interprétées de la même manière. Dans la NMF, les mots caractérisent des topics qui peuvent contribuer simultanément à plusieurs segments. Dans K-means, les mots décrivent le centre lexical de groupes distincts. La NMF donne donc une lecture plus souple des thèmes, tandis que K-means accentue les séparations entre groupes de segments.
+\subsection{Regroupement en grandes familles}
+
+Afin de rendre les 29 clusters plus faciles à interpréter, une classification hiérarchique a été appliquée à leurs centres. Elle permet de les réunir en cinq familles thématiques plus générales.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/chapitre_1/resultats/grande_famille_kmeans.png}
-    \caption{Wordcloud des mots caractéristiques des clusters K-means}
-    \label{fig:wordcloud_kmeans}
+    \includegraphics[width=0.85\textwidth]{images/chapitre_1/resultats/grande_famille_kmeans.png}
+    \caption{Distribution des grandes familles de clusters K-means par œuvre}
+    \label{fig:distribution_familles_kmeans_oeuvre}
 \end{figure}
 
-Le wordcloud des clusters K-means complète cette lecture en donnant une vue plus synthétique des mots les plus représentatifs des regroupements. Il permet d'observer rapidement les champs lexicaux dominants dans les clusters, mais il reste moins précis que les heatmaps, car il ne montre pas la distribution des mots cluster par cluster. Il doit donc être compris comme une visualisation d'appui, et non comme un outil principal d'interprétation.
+La figure~\ref{fig:distribution_familles_kmeans_oeuvre} synthétise la distribution de ces familles dans les romans. Elle distingue les motifs liés à l'argent et à la circulation financière, aux conflits politiques et militaires, aux institutions et à l'encadrement social, à la religion et à l'autorité cléricale, ainsi qu'à la vie quotidienne et aux expériences individuelles.
 
-\subsection{Convergences thématiques}
-
-Les intitulés attribués aux topics et aux clusters confirment les convergences observées dans les heatmaps. On retrouve, dans les deux méthodes, des ensembles liés au travail, à la mine, à la finance, à la religion, à la famille, au monde domestique, à la guerre, au commerce ou encore aux espaces urbains. Ces convergences indiquent que certains thèmes sont suffisamment présents dans le corpus pour émerger malgré des fonctionnements algorithmiques différents.
-
-Cette convergence n'implique pas que les deux méthodes produisent des résultats identiques. Certains topics NMF peuvent regrouper plusieurs dimensions lexicales que K-means sépare en clusters distincts. Inversement, certains clusters K-means peuvent rassembler des segments proches lexicalement, mais dont l'interprétation thématique reste plus large. La comparaison doit donc porter sur les régularités générales plutôt que sur une correspondance exacte entre chaque topic et chaque cluster.
-
-\subsection{Distribution des thèmes par œuvre}
-
-Afin d'observer la présence des thèmes dans chaque roman, deux visualisations complémentaires ont été produites. La première repose sur les poids moyens normalisés des topics NMF par œuvre. Elle permet d'observer la contribution moyenne de chaque topic dans chaque roman, même lorsque ce topic n'est pas nécessairement dominant dans les segments concernés.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{images/chapitre_1/resultats/grande_famille_kmeans.png}
-    \caption{Poids moyen normalisé des topics NMF par œuvre}
-    \label{fig:heatmap_poids_topics_nmf_oeuvre}
-\end{figure}
-
-Cette première heatmap propose une lecture graduelle de la présence des topics dans les œuvres. Elle permet de repérer les thèmes qui traversent plusieurs romans, mais aussi ceux qui sont plus fortement associés à certaines œuvres. Par exemple, un topic lié à la mine peut être plus visible dans \textit{Germinal}, tandis qu'un topic lié à la finance peut être plus marqué dans \textit{L'Argent}. Cette visualisation est utile parce qu'elle conserve la logique propre à la NMF : un topic peut être présent à des degrés variables dans un même roman.
-
-La seconde visualisation repose sur le topic dominant attribué à chaque segment. Une table croisée a été construite entre les œuvres et les topics dominants, puis normalisée par ligne. Cette normalisation permet d'obtenir, pour chaque roman, la proportion de segments associés à chaque topic dominant. Elle est particulièrement utile pour comparer les œuvres entre elles malgré leurs différences de longueur.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{images/chapitre_1/resultats/proportion_segment_headmap_nmf.png}
-    \caption{Proportion des segments par topic dominant et par œuvre}
-    \label{fig:heatmap_proportion_topics_oeuvre}
-\end{figure}
-
-Cette seconde heatmap donne une lecture plus directement interprétable des thèmes dominants par œuvre. Contrairement à un comptage brut, la normalisation par ligne évite que les romans les plus longs soient mécaniquement surreprésentés. Les zones les plus marquées indiquent les topics qui occupent une place importante dans un roman donné. Cette lecture permet de relier plus facilement certains thèmes à des œuvres précises, comme la mine dans \textit{Germinal}, le commerce dans \textit{Au Bonheur des dames}, la finance dans \textit{L'Argent} ou la guerre dans \textit{La Débâcle}.
-
-Les deux heatmaps ne mesurent donc pas exactement la même chose. La première indique la contribution moyenne des topics dans chaque œuvre, tandis que la seconde montre la proportion de segments pour lesquels un topic est dominant. Leur combinaison permet de distinguer les thèmes diffus, présents à faible intensité dans de nombreux segments, des thèmes plus structurants, qui dominent nettement certains passages ou certaines œuvres.
+Cette représentation simplifie la lecture générale du corpus. La famille consacrée à la vie quotidienne est présente dans la majorité des œuvres, tandis que les autres ensembles apparaissent de manière plus concentrée. Les motifs financiers sont notamment visibles dans \textit{L'Argent}, les conflits militaires dans \textit{La Débâcle}, et la religion dans les romans où l'autorité ecclésiastique occupe une place centrale.
 
 \subsection{Apport de la double approche}
 
-La comparaison entre NMF et K-means montre l'intérêt d'une double approche. La NMF offre une lecture souple et graduelle des thèmes, tandis que K-means propose une classification plus nette des segments. Le croisement des deux méthodes permet donc de mieux distinguer les thèmes stables de ceux qui dépendent davantage du modèle utilisé.
+La comparaison entre NMF et K-means permet finalement d'articuler deux niveaux d'analyse. La NMF rend compte du caractère souvent multiple des thèmes présents dans un segment, tandis que K-means propose une organisation plus nette des proximités lexicales. Leur rapprochement aide ainsi à distinguer les motifs récurrents des regroupements davantage liés au fonctionnement d'un modèle particulier.
 
-Ainsi, K-means ne remplace pas la NMF, mais il constitue un complément méthodologique utile. Lorsque les deux méthodes font apparaître des champs lexicaux proches, l'interprétation gagne en solidité. Lorsqu'elles divergent, ces écarts invitent au contraire à examiner plus précisément les segments concernés et à nuancer l'interprétation. Cette double lecture permet donc de renforcer l'analyse tout en conservant une part d'interprétation qualitative indispensable dans l'étude d'un corpus littéraire.
+Lorsque les résultats convergent, ils renforcent l'hypothèse qu'un motif occupe une place importante dans le corpus zolien. Lorsqu'ils divergent, l'examen des segments concernés permet de mieux comprendre les limites de chaque représentation. Ces régularités doivent cependant rester considérées comme des caractéristiques internes à l'œuvre de Zola. Leur éventuelle association au naturalisme devra être évaluée à partir du corpus comparatif et de la classification automatique.
