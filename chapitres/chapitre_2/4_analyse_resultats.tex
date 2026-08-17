@@ -1,461 +1,197 @@
 \section{Analyse des résultats de BERTopic}
 
-Après avoir validé le modèle, il est désormais possible d'examiner les topics
-et d'en proposer une interprétation. Cette section présente une analyse
-qualitative des résultats obtenus par BERTopic sur le corpus romanesque de
-Zola. Elle porte plus particulièrement sur la proximité entre les regroupements
-lexicaux produits par le modèle et les principaux domaines d'observation du
-naturalisme : le corps, l'hérédité, les milieux sociaux, le travail, l'argent,
-les institutions et les conditions matérielles d'existence.
+Le modèle final distingue 17 topics et attribue un topic à \(61\,419\) des \(61\,432\) segments du corpus ; seuls 13 segments conservent l'étiquette \texttt{-1}. Cette couverture presque complète rend possible une lecture d'ensemble, mais elle ne supprime pas les réserves formulées lors de la validation : \(46\,952\) affectations finales, soit 76,4\,\%, proviennent de la réattribution des documents initialement atypiques. Les effectifs décrivent donc principalement une allocation par proximité aux 17 noyaux sémantiques du modèle, et non la taille de 17 amas denses directement découverts par HDBSCAN.
 
-Cette étape demeure nécessairement interprétative. Les topics identifiés par
-BERTopic ne constituent pas des thèmes littéraires au sens strict, mais des
-regroupements de mots et de documents présentant des proximités sémantiques.
-Leur signification dépend donc à la fois des mots représentatifs calculés par
-le modèle et du retour aux passages du corpus associés à chaque groupe.
+Un topic BERTopic ne constitue pas un thème littéraire déjà nommé. Il rassemble des segments proches dans l'espace sémantique, puis les caractérise par un vocabulaire pondéré. Son interprétation repose ici sur trois indices complémentaires : les quinze termes les mieux classés par le c-TF-IDF, les documents représentatifs et la distribution des segments entre les romans. Les intitulés employés dans cette section sont par conséquent des étiquettes de lecture ; ils synthétisent le contenu dominant sans prétendre épuiser tous les usages d'un topic.
 
-\subsection{Principes du classement}
+\subsection{Des topics aux familles thématiques}
 
-Les trente-trois topics ont été répartis selon quatre degrés de proximité avec
-le naturalisme. Le niveau~4 regroupe les topics qui réunissent plusieurs
-dimensions centrales de l'esthétique naturaliste. Le niveau~3 correspond à une
-proximité forte, mais moins complète ou lexicalement moins homogène. Le
-niveau~2 signale une relation indirecte ou hybride. Enfin, le niveau~1 rassemble
-les topics dont le contenu est peu discriminant pour caractériser le
-naturalisme.
+Afin de rendre les résultats lisibles, les 17 topics ont été réunis a posteriori en six familles thématiques. Cette opération ne modifie ni le modèle ni l'affectation des segments : elle rapproche seulement des topics voisins pour organiser l'analyse et les visualisations temporelles. Il faut donc conserver deux niveaux de lecture : la famille fait apparaître un domaine général, tandis que les topics qui la composent en décrivent des dimensions parfois très différentes.
 
-Le classement repose sur les dix mots représentatifs de chaque topic, complétés
-par la lecture des documents représentatifs. Afin de ne pas surcharger les
-tableaux, seuls des termes appartenant aux dix mots exportés sont reproduits
-ci-dessous. Les justifications sont développées après chaque tableau plutôt que
-répétées dans une quatrième colonne. La colonne \textit{Effectif} indique le
-nombre de segments attribués à chaque topic dans le modèle final, après la
-réaffectation des documents atypiques ; les trente-trois topics regroupent
-ainsi les \(5\,327\) segments du corpus.
+\begin{table}[H]
+    \centering
+    \caption{Regroupement interprétatif des 17 topics en six familles}
+    \label{tab:familles-topics-bertopic}
+    \begin{tabularx}{\textwidth}{
+        >{\raggedright\arraybackslash}X
+        >{\centering\arraybackslash}p{2.5cm}
+        >{\centering\arraybackslash}p{2.1cm}
+        >{\centering\arraybackslash}p{2.1cm}}
+        \toprule
+        \textbf{Famille thématique} & \textbf{Topics} & \textbf{Segments} & \textbf{Part des segments assignés} \\
+        \midrule
+        Corps, apparences et vie privée ou mondaine & 5, 8, 10 & \(15\,460\) & 25,17\,\% \\
+        Travail, argent et conditions matérielles & 4, 6, 9, 14 & \(14\,814\) & 24,12\,\% \\
+        Institutions, religion et pouvoir & 1, 12, 13, 15 & \(12\,107\) & 19,71\,\% \\
+        Relations affectives, couple et famille & 2, 7, 11, 16 & \(10\,986\) & 17,89\,\% \\
+        Espaces, paysages et architecture & 0 & \(5\,397\) & 8,79\,\% \\
+        Guerre et violence collective & 3 & \(2\,655\) & 4,32\,\% \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
 
-\subsubsection{Niveau 4 : une proximité très forte avec le naturalisme}
+Ces proportions décrivent la taille des regroupements produits par le modèle, non l'importance intrinsèque des thèmes dans l'œuvre. Elles dépendent notamment de la segmentation, de la granularité choisie et de la capacité de certains lexiques à former un groupe homogène. Le tableau~\ref{tab:description-topics-bertopic} revient donc au niveau des topics et associe à chacun un intitulé analytique, son effectif et cinq de ses termes les plus discriminants.
 
 {\small
 \begin{longtable}{
     @{}
-    >{\centering\arraybackslash}p{0.08\textwidth}
+    >{\centering\arraybackslash}p{0.07\textwidth}
     >{\centering\arraybackslash}p{0.10\textwidth}
-    p{0.72\textwidth}
+    p{0.33\textwidth}
+    p{0.39\textwidth}
     @{}
 }
-\caption{Topics présentant une très forte proximité avec le naturalisme}
-\label{tab:topics-tres-fortement-naturalistes}\\
+\caption{Interprétation synthétique des 17 topics du modèle final}
+\label{tab:description-topics-bertopic}\\
 \toprule
-\textbf{Topic} & \textbf{Effectif} & \textbf{Mots les plus discriminants}\\
+\textbf{Topic} & \textbf{Effectif} & \textbf{Intitulé analytique} & \textbf{Termes discriminants}\\
 \midrule
 \endfirsthead
-\multicolumn{3}{c}{\tablename\ \thetable{} --- suite}\\
+\multicolumn{4}{c}{\tablename\ \thetable{} --- suite}\\
 \toprule
-\textbf{Topic} & \textbf{Effectif} & \textbf{Mots les plus discriminants}\\
+\textbf{Topic} & \textbf{Effectif} & \textbf{Intitulé analytique} & \textbf{Termes discriminants}\\
 \midrule
 \endhead
 \midrule
-\multicolumn{3}{r}{\textit{Suite à la page suivante}}\\
+\multicolumn{4}{r}{\textit{Suite à la page suivante}}\\
 \endfoot
 \bottomrule
 \endlastfoot
-1  & 422 & nerf, maternité, déchirement, insomnie\\
-5  & 199 & usurier, spéculation, crédit, emprunt, immeuble\\
-6  & 226 & hérédité, dot, loyer, spéculation, enseignement\\
-8  & 212 & infirmier, contraction, orbite, artère, major\\
-11 & 228 & fromage, pigeon, paie, berger, champagne\\
-12 & 132 & boudin, marmite, sauce, charcutier, gourmandise\\
-14 & 159 & porion, mineur, cuvelage, fusion, éboulement\\
-15 & 192 & mineur, grève, république, insurgé, représentant\\
-16 & 176 & chapelier, zingueur, patronne, fruitière, forgeron\\
-18 & 184 & chou, cloutier, champagne, carotte, battoir\\
-20 & 69  & accusé, accusation, juré, expert, audience\\
-21 & 114 & accouchée, angine, potion, médecine, toux\\
-22 & 105 & vitrine, commis, maraîcher, carotte, denier\\
-29 & 48  & hausse, émission, actionnaire, liquidation, financier\\
-30 & 124 & brigadier, meute, soudure, cuvelage, aubergiste\\
+\multicolumn{4}{@{}l}{\textbf{Corps, apparences et vie privée ou mondaine}}\\*
+5  & \(5\,277\) & Nuit, sommeil et espace intime & oreiller, insomnie, recoucher, respiration, parquet\\
+8  & \(7\,588\) & Vie domestique et sociabilité mondaine & thé, loge, cocher, piano, vestibule\\
+10 & \(2\,595\) & Corps, vêtements et portraits physiques & hanche, blancheur, chevelure, corsage, physionomie\\
+\addlinespace
+\multicolumn{4}{@{}l}{\textbf{Travail, argent et conditions matérielles}}\\*
+4  & \(3\,817\) & Finance, propriété et spéculation & banque, capital, spéculation, immeuble, faillite\\
+6  & \(5\,714\) & Alimentation et sociabilité populaire & soupe, Gervaise, blanchisseur, zingueur, casserole\\
+9  & \(2\,873\) & Machines, industrie et infrastructures & rail, berline, câble, fonte, acier\\
+14 & \(2\,410\) & Dette et économie quotidienne & centime, rembourser, emprunter, usurier, créance\\
+\addlinespace
+\multicolumn{4}{@{}l}{\textbf{Institutions, religion et pouvoir}}\\*
+1  & \(4\,554\) & Discours socio-religieux et projet collectif & nation, catholicisme, démocratie, salariat, solidarité\\
+12 & \(2\,631\) & Hiérarchie ecclésiastique & éminence, prélat, monsignor, pape, congrégation\\
+13 & \(1\,923\) & Enquête, preuve et justice & paraphe, accusé, arrestation, expert, audience\\
+15 & \(2\,999\) & Conflit clérical et politique & jésuite, clérical, laïque, réactionnaire, municipal\\
+\addlinespace
+\multicolumn{4}{@{}l}{\textbf{Relations affectives, couple et famille}}\\*
+2  & \(3\,188\) & Parole amoureuse et affective & pleure, mienne, mien, épouse, désire\\
+7  & \(4\,725\) & Couple, maternité et sacrifice & épouse, maternité, virginité, union, sein\\
+11 & \(1\,734\) & Supplication, pardon et devoir moral & supplie, conjure, miséricorde, confesse, pénitence\\
+16 & \(1\,339\) & Union, séparation et intimité & séparation, union, fiançaille, fiancé, embrassement\\
+\addlinespace
+\multicolumn{4}{@{}l}{\textbf{Espaces, paysages et architecture}}\\*
+0  & \(5\,397\) & Paysages naturels et espaces construits & toiture, feuillage, nef, coteau, dôme\\
+\addlinespace
+\multicolumn{4}{@{}l}{\textbf{Guerre et violence collective}}\\*
+3  & \(2\,655\) & Guerre, armée et affrontement collectif & troupe, barricade, batterie, allemand, artillerie\\
 \end{longtable}
 }
 
-Le premier ensemble fortement naturaliste concerne l'observation du corps et
-des déterminismes biologiques. Le topic~1 associe la maternité aux nerfs et à
-l'insomnie, tandis que le topic~8 réunit l'infirmier, les contractions, l'orbite
-et l'artère ; les documents représentatifs précisent ce cadre par des scènes de
-blessure et d'intervention médicale. Le topic~21 prolonge cette dimension par
-le vocabulaire de l'accouchement, de la maladie et des soins. Les topics~20
-et~30 exigent davantage encore le retour aux passages. Le premier possède une
-représentation lexicale nettement judiciaire, mais les expertises mises en
-scène y mobilisent l'hérédité et l'atavisme ; le second présente une liste de
-mots très hétérogène, alors que ses documents représentatifs rapprochent la
-folie, la famille, le travail et la misère. Leur classement au niveau~4 tient
-donc à cette articulation contextuelle et doit être considéré avec plus de
-prudence que celui des topics dont les dix premiers mots suffisent à établir
-la cohérence.
+\subsection{Lecture qualitative des six familles}
 
-Un deuxième ensemble porte sur le travail et les milieux populaires. Le
-topic~14 décrit la mine, son organisation technique et ses dangers, alors que
-le topic~15 ajoute la grève et le conflit politique à la condition du mineur.
-Le topic~16 rassemble plusieurs métiers manuels et commerciaux, donnant à voir
-la diversité d'un quartier populaire. Ces topics sont fortement naturalistes
-parce qu'ils ne représentent pas le travail comme un simple décor : celui-ci
-constitue un milieu qui façonne les corps, les comportements et les rapports
-entre les classes.
+\paragraph{Corps, apparences et vie privée ou mondaine.} Cette première famille est la plus volumineuse, mais son unité tient moins au seul corps qu'aux scènes où celui-ci est observé dans un espace social ou intime. Le topic~5 rassemble la chambre, le sommeil, l'insomnie, la respiration et parfois la défaillance physique ; il est particulièrement présent dans \textit{Thérèse Raquin} et \textit{La Joie de vivre}. Le topic~10 correspond plus nettement au portrait : le corps y devient visible par la chevelure, les vêtements, les formes et la physionomie. Le topic~8, le plus grand du modèle avec \(7\,588\) segments, déplace l'attention vers les pratiques domestiques et mondaines, les visites, le théâtre, les moyens de transport et le personnel de maison. Sa forte représentation dans \textit{Nana}, \textit{Pot-Bouille} et \textit{Une page d'amour} montre que le modèle saisit moins une catégorie sociale unique qu'une mise en scène répétée des individus à travers leurs intérieurs, leurs apparences et leurs codes de sociabilité.
 
-Enfin, les topics~5, 6 et~29 montrent le rôle déterminant de l'argent, du
-crédit, de la propriété et de la spéculation. Le topic~6 est particulièrement
-significatif puisqu'il rapproche ces contraintes économiques de l'hérédité et
-des institutions. Les topics~12 et~22 décrivent clairement la préparation et
-la vente des aliments ; les topics~11 et~18 associent ce vocabulaire à des
-termes militaires, professionnels ou mondains et sont donc moins homogènes.
-Leurs documents représentatifs font néanmoins apparaître la production, la
-consommation et les travailleurs qui organisent la circulation des
-marchandises. Cette attention portée à l'alimentation, aux commerces et aux
-objets ordinaires correspond au souci naturaliste d'observer la société à
-partir de ses réalités les plus concrètes, tout en laissant subsister des
-frontières interprétatives entre les regroupements.
+\paragraph{Travail, argent et conditions matérielles.} Les quatre topics de cette famille décrivent plusieurs échelles de la vie économique. Le topic~6 part du quotidien populaire : les repas, les métiers et les échanges familiers, fortement associés à \textit{L'Assommoir}, \textit{La Terre} et \textit{Le Ventre de Paris}. La présence de Gervaise parmi ses termes les plus discriminants montre toutefois qu'une partie de sa cohérence provient directement de \textit{L'Assommoir} et invite à ne pas l'assimiler sans réserve à l'ensemble des milieux populaires. Le topic~9 isole au contraire la matérialité industrielle par les rails, les câbles, les charpentes et les machines ; \textit{Germinal} en constitue le foyer principal. Le topic~4 porte sur la banque, la propriété et la spéculation, avec une concentration attendue dans \textit{L'Argent}, mais aussi dans \textit{La Curée} et \textit{Au Bonheur des dames}. Enfin, le topic~14 rend visible une économie plus diffuse, faite de centimes, d'emprunts, de dots et de créances. Leur regroupement met ainsi en relation le budget domestique, la consommation, le travail industriel et la finance : l'argent n'apparaît pas comme un thème isolé, mais comme un système de contraintes qui relie les corps, les métiers et les positions sociales.
 
-\subsubsection{Niveau 3 : une forte proximité avec le naturalisme}
+\paragraph{Institutions, religion et pouvoir.} Cette famille associe quatre formes de discours institutionnel. Le topic~12 représente la hiérarchie catholique à travers ses titres, ses audiences et ses congrégations ; il est particulièrement caractéristique de \textit{Rome}, tout en étant déjà visible dans \textit{La Conquête de Plassans} et \textit{Son Excellence Eugène Rougon}. Le topic~15 porte davantage sur l'affrontement entre cléricaux, laïques, réactionnaires et socialistes, notamment dans \textit{Vérité}. Le topic~13 décrit le fonctionnement de la justice par l'enquête, les expertises, les témoignages et l'accusation ; sa concentration dans \textit{Vérité} confirme la cohérence de cette interprétation. Plus abstrait, le topic~1 rassemble les discours sur la nation, le catholicisme, la démocratie, le salariat et la transformation sociale. L'ensemble fait apparaître le passage des institutions comme cadres du récit aux institutions comme objets explicites de critique et de projet politique.
 
-{\small
-\begin{longtable}{
-    @{}
-    >{\centering\arraybackslash}p{0.08\textwidth}
-    >{\centering\arraybackslash}p{0.10\textwidth}
-    p{0.72\textwidth}
-    @{}
-}
-\caption{Topics présentant une forte proximité avec le naturalisme}
-\label{tab:topics-naturalisme-niveau-3}\\
-\toprule
-\textbf{Topic} & \textbf{Effectif} & \textbf{Mots les plus discriminants}\\
-\midrule
-\endfirsthead
-\multicolumn{3}{c}{\tablename\ \thetable{} --- suite}\\
-\toprule
-\textbf{Topic} & \textbf{Effectif} & \textbf{Mots les plus discriminants}\\
-\midrule
-\endhead
-\midrule
-\multicolumn{3}{r}{\textit{Suite à la page suivante}}\\
-\endfoot
-\bottomrule
-\endlastfoot
-0  & 345 & pleur, balbutiant, infâme, âcre, défaillant\\
-3  & 205 & nation, salariat, socialisme, démocratie, enseignement\\
-10 & 147 & barricade, régiment, insurgé, batterie, artillerie\\
-13 & 201 & divorce, ride, infirmerie, fleuriste, coiffeur\\
-17 & 154 & corset, chapelet, trousseau, bréviaire, rôtissoire\\
-19 & 163 & vitrine, baron, enclume, brioche, carabine\\
-25 & 142 & tranchée, écuelle, prisonnier, dégel, mourir\\
-27 & 133 & obsèque, macquart, ignominie, émancipation, combustion\\
-31 & 56  & salissure, insomnie, flacon, coulure, vivifiant\\
-32 & 38  & mansarde, infâme, verrier, fange, infamie\\
-\end{longtable}
-}
+\paragraph{Relations affectives, couple et famille.} Les topics~2, 7, 11 et~16 décrivent l'intimité à partir de positions d'énonciation et de situations relationnelles différentes. Le topic~2 est dominé par l'adresse à l'autre, le désir et la plainte ; le topic~11 par la supplication, le pardon et l'obligation morale. Les topics~7 et~16 structurent plus directement le couple autour de la maternité, de la virginité, de l'union, de la séparation et des fiançailles. La famille est très présente dans les premiers romans, notamment \textit{La Confession de Claude}, \textit{Le Vœu d'une morte}, \textit{Thérèse Raquin} et \textit{Madeleine Férat}, mais elle ne relève pas d'un simple registre sentimental : les documents représentatifs associent régulièrement l'affect aux normes conjugales, au sacrifice, à la sexualité et au devoir familial.
 
-Les topics de niveau~3 reprennent plusieurs composantes du naturalisme sans
-présenter la même homogénéité que ceux du niveau précédent. Le topic~0 associe
-la souffrance, la défaillance et la déchéance morale, mais demeure davantage
-centré sur l'émotion que sur un déterminisme clairement identifiable. Le
-topic~3 est fortement social : le salariat, le socialisme, la démocratie et
-l'enseignement donnent à voir les institutions et les transformations de la
-société contemporaine. Le topic~10 traite, pour sa part, de la guerre et de
-l'insurrection à travers un vocabulaire matériel et collectif.
+\paragraph{Espaces, paysages et architecture.} Le topic~0 réunit des éléments naturels et construits : feuillages, coteaux et rives voisinent avec les toitures, les nefs, les dômes et les alignements. Cette proximité montre que le topic isole avant tout une opération descriptive fondée sur l'organisation visuelle de l'espace. Il est particulièrement présent dans \textit{La Faute de l'abbé Mouret}, \textit{Le Ventre de Paris} et \textit{Rome}, trois œuvres qui mobilisent pourtant des milieux très différents. Le regroupement est donc cohérent sur le plan discursif sans correspondre à un décor unique ; il peut contribuer à l'étude naturaliste du milieu, mais ne constitue pas à lui seul un marqueur exclusif du naturalisme.
 
-Les topics~13, 17 et~19 se caractérisent par la rencontre de plusieurs univers
-sociaux. Les métiers, le commerce, le vêtement, la religion, l'aristocratie et
-les objets du quotidien permettent d'observer des pratiques et des positions
-sociales concrètes. Leur classement au niveau~3, plutôt qu'au niveau~4,
-s'explique par une plus grande dispersion des mots représentatifs : leur
-proximité avec le naturalisme apparaît surtout lorsque les termes sont replacés
-dans les documents associés.
+\paragraph{Guerre et violence collective.} Le topic~3 est le plus spécialisé du modèle. Son vocabulaire militaire --- troupes, divisions, batteries, obus, artillerie et nationalités combattantes --- renvoie principalement à \textit{La Débâcle}, qui réunit \(1\,095\) de ses \(2\,655\) segments. Des concentrations plus modestes apparaissent dans \textit{La Fortune des Rougon}, \textit{Les Mystères de Marseille} et \textit{Germinal}, où le lexique de l'affrontement collectif peut être mobilisé dans des contextes insurrectionnels ou sociaux. La cohérence de ce topic facilite son interprétation, mais sa forte dépendance à quelques romans rappelle qu'un groupe lexical très net peut représenter un épisode spécialisé plutôt qu'une préoccupation uniformément distribuée dans toute l'œuvre.
 
-Le topic~25 rend visibles la guerre, la privation, le froid et la mort, ce qui
-place les individus dans un environnement matériel hostile. Le topic~27
-contient le nom \textit{Macquart} et renvoie ainsi directement à la famille
-par laquelle Zola étudie les effets de l'hérédité et du milieu. Le topic~31
-rapproche l'insomnie et la salissure d'un univers de travail et de fatigue
-physiologique perceptible dans les passages représentatifs. Enfin, le
-topic~32 associe la mansarde, la fange et le métier de verrier : il évoque
-nettement la pauvreté, l'insalubrité et le travail populaire, malgré la
-présence de termes plus symboliques dans sa représentation complète.
+\subsection{Évolution des topics au fil du temps}
 
-\subsubsection{Niveau 2 : une proximité indirecte ou hybride}
+Le modèle a été construit sans intégrer la date de publication. La fonction \path{topics_over_time} répartit ensuite les segments déjà assignés dans quinze intervalles chronologiques de largeur égale entre 1865 et 1903, puis recalcule une représentation lexicale pour chaque topic et chaque intervalle. Les figures ci-dessous ne montrent pas une courbe additionnée par famille : elles mettent en évidence, dans une même image, les trajectoires individuelles des topics qui composent cette famille.
 
-{\small
-\begin{longtable}{
-    @{}
-    >{\centering\arraybackslash}p{0.08\textwidth}
-    >{\centering\arraybackslash}p{0.10\textwidth}
-    p{0.72\textwidth}
-    @{}
-}
-\caption{Topics présentant une proximité indirecte avec le naturalisme}
-\label{tab:topics-naturalisme-niveau-2}\\
-\toprule
-\textbf{Topic} & \textbf{Effectif} & \textbf{Mots les plus discriminants}\\
-\midrule
-\endfirsthead
-\multicolumn{3}{c}{\tablename\ \thetable{} --- suite}\\
-\toprule
-\textbf{Topic} & \textbf{Effectif} & \textbf{Mots les plus discriminants}\\
-\midrule
-\endhead
-\bottomrule
-\endfoot
-4  & 216 & cardinal, jésuite, prélat, diocèse, clergé\\
-9  & 207 & ambulance, professeur, souper, carriole, tabouret\\
-23 & 122 & fécondité, floraison, harmonie, chrétien, civilisation\\
-24 & 126 & jardinier, rébellion, geôlier, destinée, dot\\
-\end{longtable}
-}
+L'option \texttt{normalize\_frequency=False} ayant été conservée dans le notebook, l'axe vertical représente des effectifs bruts. Or le nombre de segments assignés varie de \(1\,340\) à \(6\,307\) selon les intervalles, soit un rapport de 1 à 4,7. Une courbe élevée peut donc traduire à la fois la place d'un topic dans les romans concernés et un volume textuel plus important. Pour limiter ce biais, l'analyse confronte les effectifs visibles à la part qu'ils représentent dans chaque intervalle et à leur répartition par roman ; elle porte sur la fréquence de topics globaux, non sur une évolution autonome de leur sens.
 
-Le topic~4 décrit de manière cohérente la hiérarchie catholique. Il peut
-participer à une analyse naturaliste lorsque l'Église est considérée comme une
-institution sociale et politique, mais son vocabulaire ne fait pas directement
-apparaître le corps, le travail ou l'hérédité. Le topic~9 rassemble des objets,
-des professions, des moyens de transport et des pratiques quotidiennes. Les
-documents correspondants font apparaître les ouvriers, la bourgeoisie et la
-politique municipale, mais les mots représentatifs restent trop dispersés pour
-former un axe naturaliste central.
+Les abscisses correspondent aux bornes inférieures de classes d'environ 2,53 années, et non à des dates d'observation exactes ; le point situé vers 1890,3 regroupe par exemple les romans publiés en 1891 et 1892. Les lignes reliant les points facilitent la lecture, mais ne doivent pas être comprises comme une continuité annuelle entre des œuvres publiées de manière discontinue.
 
-La fécondité place potentiellement le topic~23 du côté de la reproduction et de
-la continuité biologique. Toutefois, les notions d'harmonie, de civilisation
-et de christianisme lui donnent aussi une portée abstraite et symbolique. Le
-topic~24 contient des indices de position sociale et de contrainte économique,
-notamment le métier de jardinier, l'enfermement et la dot. Leur juxtaposition
-ne suffit cependant pas à constituer un ensemble thématique stable. Ces quatre
-topics entretiennent donc une relation réelle, mais indirecte, avec les objets
-d'étude du naturalisme.
-
-\subsubsection{Niveau 1 : une faible spécificité naturaliste}
-
-{\small
-\begin{longtable}{
-    @{}
-    >{\centering\arraybackslash}p{0.08\textwidth}
-    >{\centering\arraybackslash}p{0.10\textwidth}
-    p{0.72\textwidth}
-    @{}
-}
-\caption{Topics présentant une faible spécificité naturaliste}
-\label{tab:topics-naturalisme-niveau-1}\\
-\toprule
-\textbf{Topic} & \textbf{Effectif} & \textbf{Mots les plus discriminants}\\
-\midrule
-\endfirsthead
-\multicolumn{3}{c}{\tablename\ \thetable{} --- suite}\\
-\toprule
-\textbf{Topic} & \textbf{Effectif} & \textbf{Mots les plus discriminants}\\
-\midrule
-\endhead
-\bottomrule
-\endfoot
-2  & 198 & tombeau, temple, statue, paysage, dôme\\
-7  & 162 & antéchrist, vœu, convalescence, confessionnal, meneur\\
-26 & 63  & œillet, pavot, lis, parterre, héliotrope\\
-28 & 59  & calice, patène, diacre, gothique, hostie\\
-\end{longtable}
-}
-
-Le topic~2 est principalement consacré aux paysages, aux monuments et aux
-espaces architecturaux. Ces éléments peuvent naturellement servir de cadre à
-un roman naturaliste, mais ils ne permettent pas, à eux seuls, de reconnaître
-un traitement propre au naturalisme. Le topic~7 est dominé par un vocabulaire
-religieux et moral. Malgré la présence de quelques états corporels ou métiers,
-il ne fait apparaître aucun axe social, physiologique ou environnemental
-suffisamment cohérent.
-
-Le topic~26 relève surtout du registre floral, décoratif et sensoriel. Le
-topic~28 réunit de la même manière des objets liturgiques et des éléments
-architecturaux ou décoratifs. Dans les deux cas, les termes peuvent contribuer
-à la description minutieuse d'un milieu, mais ils ne désignent pas
-spécifiquement les déterminismes biologiques, les conflits sociaux ou les
-conditions matérielles qui caractérisent le projet naturaliste.
-
-Ce dernier niveau ne doit donc pas être compris comme une exclusion absolue.
-Il indique seulement que ces topics sont peu discriminants pour identifier le
-naturalisme à partir de leur lexique. Une conclusion stylistique définitive
-nécessiterait de revenir aux passages non lemmatisés, à leur narration, à leur
-focalisation et à la manière dont ils articulent les personnages à leur milieu.
-
-\subsection{Visualisation des topics au fil du temps}
-
-Cette dernière étape met en relation les topics précédemment interprétés avec
-les dates de publication des romans. Le modèle global est d'abord construit
-sans information chronologique ; la fonction \texttt{topics\_over\_time}
-répartit ensuite les segments déjà assignés dans quinze intervalles de largeur
-chronologique égale, couvrant la période 1865--1903, et
-recalcule leur représentation lexicale pour chacun d'eux\footnote{Voir la
-\href{https://maartengr.github.io/BERTopic/getting_started/topicsovertime/topicsovertime.html}
-{documentation officielle de BERTopic consacrée aux topics au fil du temps},
-consultée le 29 juillet 2026.}. L'axe vertical indique une fréquence brute :
-il correspond au nombre de segments rattachés à un topic dans un intervalle,
-et non à leur proportion dans l'ensemble des textes publiés au même moment.
-Les variations peuvent donc refléter à la fois une concentration thématique et
-le volume inégal du corpus selon les périodes. Les graphiques sont utilisés
-pour étudier la récurrence et les inflexions des topics, sans leur attribuer
-une importance relative que ces seuls effectifs ne permettraient pas d'établir.
-Dans la sortie native, lorsqu'un topic est absent d'un intervalle, le tracé
-relie les points disponibles sans afficher une fréquence nulle. Afin d'éviter
-cet effet visuel trompeur, les graphiques reproduits ci-dessous représentent
-explicitement ces absences par une valeur nulle.
-
-\subsubsection{Permanence des thèmes les plus fortement naturalistes}
-
-Les trois premières figures portent sur des topics classés au niveau~4. Elles
-permettent de vérifier si les réalités matérielles qui structurent le projet
-naturaliste --- le travail, l'argent et la circulation des marchandises ---
-demeurent observables au-delà des romans auxquels elles sont le plus
-spontanément associées.
+\subsubsection{Corps, apparences et vie privée ou mondaine}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/chapitre_2/visualisation_temps/milieux_populaires.png}
-    \caption{Présence des topics liés aux milieux populaires et au travail dans le corpus}
-    \label{fig:milieux_populaire}
+    \includegraphics[width=\textwidth,trim=0 0 0 75,clip]{\detokenize{images/chapitre_2/visualisation_temps/Corps, apparences et vie privée ou mondaine.png}}
+    \caption{Évolution en effectifs bruts des topics 5, 8 et 10 : corps, apparences et vie privée ou mondaine}
+    \label{fig:temps-corps-vie-privee}
 \end{figure}
 
-La figure~\ref{fig:milieux_populaire} fait apparaître la famille du travail
-populaire sur l'ensemble de la chronologie, mais selon des rythmes distincts.
-Le topic~16, associé aux métiers manuels et aux petits commerces, connaît sa
-plus forte concentration dans l'intervalle 1876--1877, puis réapparaît à des
-niveaux plus faibles jusqu'à la fin du corpus. Le topic~14, plus spécialisé
-dans le monde minier, culmine en 1883--1885, tandis que le topic~15, qui
-articule travail, grève et politique, est le seul des trois à apparaître dans
-chacun des quinze intervalles. La continuité observée n'est donc pas celle
-d'une fréquence constante pour chaque topic : elle résulte de la reprise, sous
-des formes professionnelles et conflictuelles différentes, d'une même
-attention aux conditions de travail. Le monde ouvrier ne se réduit ainsi ni à
-un seul topic ni au seul moment de \textit{Germinal}.
+La figure~\ref{fig:temps-corps-vie-privee} fait surtout apparaître le poids du topic~8. Celui-ci atteint 978 segments dans l'intervalle contenant les publications de 1878 et 1880, puis 586 dans celui de 1882 ; ces valeurs sont principalement portées par \textit{Une page d'amour}, \textit{Nana} et \textit{Pot-Bouille}. Les trois topics réunis représentent respectivement 46,6\,\% et 45,7\,\% des segments assignés dans ces deux intervalles, ce qui confirme que les sommets ne résultent pas uniquement du volume du corpus. Le pic brut le plus élevé de la famille apparaît toutefois en 1883--1885 avec \(1\,737\) segments : ramené aux \(6\,307\) segments de l'intervalle, il ne représente plus que 27,5\,\%. La distinction entre effectif et proportion modifie donc sensiblement la lecture de la courbe.
+
+Les topics~5 et~10 suivent des trajectoires moins concentrées. Le premier atteint 696 segments en 1883--1885 et relie des scènes nocturnes ou intimes présentes dans plusieurs univers romanesques ; le second reste plus faible et diffuse les descriptions corporelles sur l'ensemble de la chronologie. Cette famille ne dessine donc pas une progression continue. Elle met plutôt en évidence un moment de forte densité domestique et mondaine autour de 1878--1882, entouré d'une présence plus régulière du corps, du sommeil et du portrait.
+
+\subsubsection{Travail, argent et conditions matérielles}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/chapitre_2/visualisation_temps/argent.png}
-    \caption{Présence des topics liés à l'argent dans le corpus}
-    \label{fig:argent}
+    \includegraphics[width=\textwidth,trim=0 0 0 75,clip]{\detokenize{images/chapitre_2/visualisation_temps/Travail, argent et conditions matérielles.png}}
+    \caption{Évolution en effectifs bruts des topics 4, 6, 9 et 14 : travail, argent et conditions matérielles}
+    \label{fig:temps-travail-argent}
 \end{figure}
 
-La figure~\ref{fig:argent} distingue deux temporalités de l'argent. Les
-topics~5 et~6, qui réunissent le crédit, l'emprunt, le loyer, la dot et la
-spéculation, sont présents dans chacun des quinze intervalles. Ils montrent que
-les dépendances économiques ordinaires traversent toute la carrière
-romanesque. Le topic~29,
-dominé par le vocabulaire de la Bourse et de la finance, reste en revanche
-discontinu et faiblement représenté en dehors d'un sommet très net dans
-l'intervalle 1891--1892. Cette concentration coïncide avec la publication de
-\textit{L'Argent} en 1891. Le graphique ne décrit donc pas une progression
-linéaire de l'intérêt de Zola pour l'économie : il oppose plutôt une présence
-durable des rapports monétaires à la cristallisation tardive d'un lexique
-financier spécialisé.
+Les courbes de la figure~\ref{fig:temps-travail-argent} montrent que la famille matérielle ne possède pas un sommet unique. Le topic~6 atteint 1\,253 segments dans l'intervalle 1876--1877, dont \(1\,138\) dans \textit{L'Assommoir} ; avec les topics~4, 9 et~14, la famille représente alors 44,6\,\% des segments assignés. En 1883--1885, le topic~9 culmine à 684 segments, dont 496 dans \textit{Germinal}, tandis que le topic~6 demeure élevé sous l'effet conjoint d'\textit{Au Bonheur des dames}, de \textit{La Joie de vivre} et de \textit{Germinal}. L'intervalle rassemble \(2\,348\) segments de la famille, soit 37,2\,\% des segments qui y sont assignés.
+
+Le topic~4 connaît son maximum en 1891--1892 avec 594 segments, dont 498 appartiennent à \textit{L'Argent}. Le topic~14 ne présente pas une spécialisation comparable : son vocabulaire de la dette et des petites sommes demeure réparti entre de nombreux romans. La succession de ces pics n'indique donc pas le remplacement d'un thème par un autre. Elle montre plutôt trois formes de détermination matérielle que le modèle distingue : la vie populaire et alimentaire autour de \textit{L'Assommoir}, la mécanisation du travail autour de \textit{Germinal}, puis la finance autour de \textit{L'Argent}. C'est cette articulation, plus que la hauteur globale d'une courbe, qui rend la famille centrale pour l'analyse du projet naturaliste.
+
+\subsubsection{Institutions, religion et pouvoir}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/chapitre_2/visualisation_temps/production_vente.png}
-    \caption{Présence des topics liés à la production, à la vente et à la consommation dans le corpus}
-    \label{fig:production_vente}
+    \includegraphics[width=\textwidth,trim=0 0 0 75,clip]{\detokenize{images/chapitre_2/visualisation_temps/Institutions, religion et pouvoir.png}}
+    \caption{Évolution en effectifs bruts des topics 1, 12, 13 et 15 : institutions, religion et pouvoir}
+    \label{fig:temps-institutions-pouvoir}
 \end{figure}
 
-La figure~\ref{fig:production_vente} prolonge cette lecture sur le terrain des
-marchandises et de l'alimentation. Le topic~12 se concentre surtout dans les
-années 1870 ; les topics~18 et~22 se renforcent à la fin de cette décennie et
-culminent en 1883--1885, tandis que le topic~11 atteint son niveau le plus élevé
-en 1886--1887. Les topics~11 et~12 apparaissent dans les quinze intervalles ;
-les topics~18 et~22 ne sont absents que de celui correspondant à 1868, et tous
-quatre sont encore attestés dans le dernier intervalle. Ces décalages montrent
-que la matérialité des échanges ne dépend pas d'un unique univers romanesque :
-cuisine, production alimentaire, marchés, commerces et vitrines sont
-successivement mobilisés pour décrire des milieux différents. Les trois
-figures de niveau~4 font ainsi apparaître une permanence des principaux objets
-naturalistes sans effacer leurs concentrations ponctuelles.
+La figure~\ref{fig:temps-institutions-pouvoir} présente l'inflexion chronologique la plus nette. À l'échelle des ensembles romanesques, la famille représente 12,2\,\% des segments des \textit{Rougon-Macquart}, contre 37,8\,\% dans les \textit{Trois Villes} et 37,0\,\% dans les trois romans publiés du cycle des \textit{Quatre Évangiles} présents dans le corpus. Dans l'intervalle qui contient uniquement \textit{Rome} en 1896, les quatre topics réunissent \(1\,674\) segments, soit 47,7\,\% du roman. Le dernier intervalle, qui regroupe \textit{Travail} et \textit{Vérité}, atteint \(2\,831\) segments et 45,4\,\% des segments assignés.
 
-\subsubsection{Continuités et inflexions des topics de niveau 3}
+Cette hausse ne repose pas sur un seul topic. Le topic~1, consacré aux discours socio-religieux et aux projets collectifs, atteint 1\,349 segments dans le dernier intervalle ; le topic~15, centré sur le conflit clérical et politique, en compte 676 ; le topic~13, judiciaire, 568. Le topic~12 suit une trajectoire plus discontinue : il est déjà élevé dans l'intervalle 1873--1875, notamment à cause de \textit{La Conquête de Plassans}, puis atteint 450 segments dans \textit{Rome}. Les résultats ne montrent donc pas une apparition tardive des institutions, mais une reconfiguration : les œuvres finales combinent plus fortement discours idéologique, conflit religieux, organisation politique et procédure judiciaire.
 
-Les figures suivantes concernent des topics classés au niveau~3. Leur lexique
-est moins homogène ou leur rapport au naturalisme moins directement fondé sur
-un déterminisme biologique, social ou matériel. Leur distribution temporelle
-permet toutefois de préciser la place durable de l'observation sociale et de
-la souffrance dans l'œuvre, ainsi que l'inflexion politique des derniers
-romans.
+\subsubsection{Relations affectives, couple et famille}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/chapitre_2/visualisation_temps/univers_sociaux.png}
-    \caption{Présence des topics liés aux univers sociaux et aux pratiques quotidiennes dans le corpus}
-    \label{fig:univers_sociaux}
+    \includegraphics[width=\textwidth,trim=0 0 0 75,clip]{\detokenize{images/chapitre_2/visualisation_temps/Relations affectives, couple et famille.png}}
+    \caption{Évolution en effectifs bruts des topics 2, 7, 11 et 16 : relations affectives, couple et famille}
+    \label{fig:temps-relations-famille}
 \end{figure}
 
-La figure~\ref{fig:univers_sociaux} réunit les topics~13, 17 et~19, dont les
-mots représentatifs associent des métiers, des objets domestiques, le vêtement,
-la religion, le commerce et certaines positions sociales. Les topics~13 et~19
-sont présents dans les quinze intervalles et le topic~17 n'est absent que de
-celui correspondant à 1868. Leurs principaux sommets ne se superposent
-toutefois pas : le topic~17 se concentre d'abord en 1873--1875, le topic~13 en
-1878--1880 et le topic~19 en 1882 ; les topics~13 et~17 connaissent ensuite un
-regain en 1898--1899. Cette distribution irrégulière confirme la raison de
-leur classement au niveau~3. Ils ne constituent pas un thème unique et
-stable ; ils témoignent plutôt du retour de scènes où les personnages sont
-caractérisés par leurs usages, leurs objets et leur appartenance à un milieu.
-La continuité porte ainsi sur une méthode d'observation du social, dont les
-contenus concrets varient d'un roman à l'autre.
+La figure~\ref{fig:temps-relations-famille} révèle une présence particulièrement forte au début du corpus. La famille représente 33,5\,\% des segments de l'intervalle 1865--1867 et 51,1\,\% de celui qui contient \textit{Madeleine Férat} en 1868. À l'échelle des romans, elle atteint également 59,2\,\% dans \textit{La Confession de Claude}, 44,5\,\% dans \textit{Le Vœu d'une morte} et 38,9\,\% dans \textit{Thérèse Raquin}. Ces valeurs confirment que les premiers récits structurent fortement les affects autour de la parole amoureuse, de l'union, de la jalousie, du sacrifice et de la faute.
+
+La famille ne disparaît cependant pas avec le développement des grands romans sociaux. Sa part tombe à 6,2\,\% en 1876--1877, puis fluctue avant d'atteindre 21,8\,\% en 1898--1899 et 19,4\,\% en 1901--1903. Le topic~7, centré sur le couple et la maternité, porte une grande partie de cette reprise, notamment dans \textit{Fécondité}. La courbe décrit donc moins un recul linéaire du registre affectif qu'un changement de contexte : d'abord au premier plan de récits intimes, il est ensuite réinscrit dans des ensembles où la famille est articulée à des enjeux sociaux, moraux ou collectifs.
+
+\subsubsection{Espaces, paysages et architecture}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/chapitre_2/visualisation_temps/institutions_sociales.png}
-    \caption{Présence du topic lié aux institutions et aux transformations sociales dans le corpus}
-    \label{fig:social}
+    \includegraphics[width=\textwidth,trim=0 0 0 75,clip]{\detokenize{images/chapitre_2/visualisation_temps/Espaces, paysages et architecture.png}}
+    \caption{Évolution en effectifs bruts du topic 0 : espaces, paysages et architecture}
+    \label{fig:temps-espaces-paysages}
 \end{figure}
 
-La figure~\ref{fig:social} présente une dynamique différente. Le topic~3,
-caractérisé notamment par les termes \textit{nation}, \textit{salariat},
-\textit{socialisme}, \textit{démocratie} et \textit{enseignement}, reste peu
-fréquent dans la première moitié de la chronologie et ne comporte aucune
-occurrence dans les deux intervalles couvrant 1878--1882. Sa fréquence augmente
-à partir des années 1890 et atteint son maximum dans l'intervalle 1901--1903.
-La répartition par roman confirme que ce sommet est principalement porté par
-\textit{Travail} et \textit{Vérité}, mais aussi par \textit{Rome},
-\textit{Paris} et \textit{Fécondité}. L'inflexion correspond donc aux cycles
-tardifs des \textit{Trois Villes} et des \textit{Quatre Évangiles}, dans
-lesquels les questions religieuses, politiques et sociales prennent une place
-accrue\footnote{Voir la
-\href{https://essentiels.bnf.fr/fr/litterature/19e-siecle-1/c1c36ea9-6da6-43c6-b12e-ef774f4f4b79-realisme-et-naturalisme/personnalite/849e1bc9-ba27-43ad-8899-4cc7eeae7303-emile-zola}
-{présentation d'Émile Zola par la Bibliothèque nationale de France},
-consultée le 29 juillet 2026.}. Cette courbe ne prouve donc pas la permanence
-d'une intensité égale ; elle met en évidence l'élargissement tardif de
-l'enquête naturaliste vers une formulation plus explicite des transformations
-collectives.
+Le topic~0 est présent dans les quinze intervalles, mais sa courbe reste irrégulière. Son maximum brut, 742 segments en 1873--1875, est exactement formé par \textit{Le Ventre de Paris}, \textit{La Conquête de Plassans} et \textit{La Faute de l'abbé Mouret}. Ces œuvres associent respectivement architecture marchande, ville provinciale et paysage végétal, ce qui confirme que le topic repère une manière de construire l'espace plutôt qu'un lieu homogène. Un second sommet de 639 segments correspond à \textit{Rome} en 1896 ; il représente alors 18,2\,\% du roman, soit la part la plus élevée de la chronologie.
+
+La présence transversale du topic montre que la description du milieu accompagne plusieurs phases de l'œuvre, mais ses variations sont largement dépendantes des décors propres à chaque roman. On ne peut donc pas déduire de la courbe une intensification ou un effacement général de la description. Elle indique plutôt que BERTopic rapproche des passages où l'environnement est organisé comme un ensemble visible, qu'il s'agisse d'un paysage, d'un édifice ou d'un espace urbain.
+
+\subsubsection{Guerre et violence collective}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/chapitre_2/visualisation_temps/souffrance_defaillance.png}
-    \caption{Présence du topic lié à la souffrance et à la défaillance dans le corpus}
-    \label{fig:emotion}
+    \includegraphics[width=\textwidth,trim=0 0 0 75,clip]{\detokenize{images/chapitre_2/visualisation_temps/Guerre et violence collective.png}}
+    \caption{Évolution en effectifs bruts du topic 3 : guerre et violence collective}
+    \label{fig:temps-guerre-violence}
 \end{figure}
 
-La figure~\ref{fig:emotion} montre enfin que le topic~0 est présent dans chacun
-des quinze intervalles. Les segments qui lui sont rattachés sont nombreux au
-début des années 1870, connaissent plusieurs reprises dans les décennies
-suivantes, diminuent fortement au milieu des années 1890, puis remontent dans
-le dernier intervalle. Le vocabulaire des pleurs, du balbutiement, de
-l'infamie et de la défaillance forme ainsi un registre persistant de la
-souffrance physique et morale. Cette permanence doit néanmoins être distinguée
-d'une spécificité exclusivement naturaliste : l'expression de l'émotion
-traverse plusieurs esthétiques littéraires et ne désigne pas, à elle seule, un
-déterminisme. Sa récurrence sur toute la carrière, combinée aux milieux et aux
-contraintes décrits par les autres topics, justifie donc son classement au
-niveau~3 plutôt qu'au niveau~4.
+La figure~\ref{fig:temps-guerre-violence} se distingue par un pic massif et ponctuel. Le topic~3 atteint \(1\,143\) segments dans l'intervalle 1891--1892, soit 23,1\,\% des segments assignés de cette période. Parmi eux, \(1\,095\), ou 95,8\,\%, proviennent de \textit{La Débâcle} ; ce roman rassemble à lui seul 41,2\,\% de tous les segments du topic. L'association entre le vocabulaire militaire et cette œuvre est donc beaucoup plus directe que pour les familles transversales.
 
-\subsubsection{Bilan de l'observation temporelle}
+Les autres hausses restent nettement plus faibles : 234 segments dans l'intervalle de 1871, principalement sous l'effet de \textit{La Fortune des Rougon}, et 245 en 1883--1885, dont 193 dans \textit{Germinal}. Ces occurrences montrent que l'affrontement collectif traverse aussi les scènes insurrectionnelles ou sociales, mais elles ne remettent pas en cause la spécialisation du topic. Cette trajectoire constitue un cas utile : elle illustre la capacité du modèle à isoler un lexique historiquement et narrativement concentré, tout en rappelant qu'un sommet temporel peut d'abord être l'empreinte d'un seul roman.
 
-Considérées ensemble, les six figures ne dessinent ni une stabilité uniforme
-ni le remplacement simple d'un thème par un autre. Elles montrent que le
-travail, l'argent, les échanges matériels, l'observation des univers sociaux
-et la souffrance restent repérables à différents moments de la carrière de
-Zola, tandis que leur fréquence se déplace en fonction des romans et des
-cycles. Le topic~3 constitue l'inflexion la plus nette : faiblement représenté
-au début du corpus, il se développe dans les œuvres tardives. L'analyse
-temporelle confirme ainsi une permanence sélective des préoccupations
-naturalistes, accompagnée de spécialisations et de reformulations. Cette
-conclusion demeure proportionnée à la mesure employée : les courbes décrivent
-la distribution chronologique de topics globaux en effectifs bruts, et non
-l'évolution autonome de leur sens ni leur poids relatif dans chaque période.
+\subsection{Bilan interprétatif}
+
+Les six familles ne suivent pas une évolution commune. Les relations affectives dominent plusieurs œuvres de jeunesse puis sont reformulées dans les romans tardifs ; le travail et les conditions matérielles connaissent des concentrations successives autour de la vie populaire, de l'industrie et de la finance ; les institutions deviennent beaucoup plus présentes dans les cycles finaux ; enfin, la guerre dépend très fortement de \textit{La Débâcle}. Les espaces et les scènes privées restent plus transversaux, mais leur fréquence varie avec les milieux particuliers mis en récit.
+
+Cette lecture confirme l'intérêt de BERTopic pour identifier des régularités de contenu à l'échelle d'un vaste corpus. Le modèle distingue notamment les mécanismes économiques, les univers professionnels, les institutions, les formes de sociabilité et l'inscription des personnages dans des espaces matériels. Ces résultats rejoignent plusieurs objets privilégiés par l'enquête naturaliste, sans suffire à définir le naturalisme dans son ensemble : aucun topic n'isole clairement l'hérédité, et les courbes ne mesurent ni la construction narrative, ni la causalité entre milieu et personnage, ni le traitement stylistique des scènes.
+
+Le regroupement en familles doit enfin rester réversible. Il facilite la comparaison temporelle, mais il peut masquer des trajectoires opposées à l'intérieur d'un même ensemble, par exemple entre l'économie domestique du topic~14 et la finance du topic~4, ou entre la hiérarchie ecclésiastique du topic~12 et la justice du topic~13. L'apport principal de l'analyse réside donc moins dans une taxonomie définitive que dans l'articulation de trois échelles : les segments représentatifs donnent accès au contexte, les topics isolent des régularités sémantiques et les familles permettent de suivre leurs recompositions dans l'œuvre.

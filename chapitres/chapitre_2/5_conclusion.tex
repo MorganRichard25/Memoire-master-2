@@ -1,12 +1,121 @@
+\section{Mise en regard de la NMF, de K-means et de BERTopic}
+
+Les deux premiers chapitres appliquent trois méthodes non supervisées aux mêmes 31 romans de Zola. Les fichiers sources utilisés dans les deux projets sont strictement identiques, ce qui fournit un point de comparaison commun. Cette identité du corpus ne suffit toutefois pas à isoler l'effet des algorithmes : entre l'analyse classique et BERTopic, la segmentation, le prétraitement, la représentation des textes, le nombre de groupes et le traitement des documents atypiques changent simultanément. La comparaison porte donc sur trois chaînes de traitement complètes, et non sur trois modèles placés dans des conditions expérimentales identiques.
+
+\subsection{Des conditions de modélisation différentes}
+
+La NMF et K-means partagent exactement les mêmes \(5\,327\) segments, la même lemmatisation et une matrice TF--IDF de \(5\,327 \times 11\,640\). Leur rapprochement évalue surtout l'effet du passage d'une décomposition graduelle à une partition exclusive. BERTopic repose au contraire sur \(61\,432\) segments courts et sur deux représentations complémentaires : les plongements Sentence-CamemBERT sont calculés à partir du texte brut, tandis que les mots caractéristiques des topics sont extraits des textes lemmatisés.
+
+{\small
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{1.18}
+    \caption{Principales différences entre les trois chaînes de traitement}
+    \label{tab:comparaison-pipelines-topic-modeling}
+    \begin{tabularx}{\textwidth}{
+        >{\raggedright\arraybackslash}p{0.13\textwidth}
+        >{\raggedright\arraybackslash}p{0.22\textwidth}
+        >{\raggedright\arraybackslash}p{0.26\textwidth}
+        >{\raggedright\arraybackslash}X}
+        \toprule
+        \textbf{Méthode} & \textbf{Unités textuelles} & \textbf{Représentation} & \textbf{Sortie et principale réserve} \\
+        \midrule
+        NMF & \(5\,327\) blocs de 40 lignes non vides ; 785 mots bruts en moyenne & TF--IDF sur les noms et adjectifs lemmatisés ; suppression manuelle de plusieurs personnages & 29 composantes graduelles ; nombre choisi sans coude net, puis simplifié en topic dominant dans certaines visualisations \\
+        K-means & Les mêmes \(5\,327\) blocs que la NMF & La même matrice TF--IDF que la NMF & 29 clusters exclusifs ; silhouette de 0,0103, indiquant une très faible séparation \\
+        BERTopic & \(61\,432\) segments ; 105 tokens CamemBERT en moyenne & Embeddings du texte brut ; c-TF--IDF sur les noms, adjectifs et verbes lemmatisés & 17 topics exclusifs dans l'analyse finale ; 76,4\,\% des affectations proviennent de la réattribution des documents initialement atypiques \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+}
+
+La différence d'échelle est considérable : les deux mesures ne sont pas strictement équivalentes, mais les 785 mots bruts d'un bloc classique contrastent nettement avec les 105 tokens CamemBERT d'un segment BERTopic. Les longs blocs favorisent la coexistence de plusieurs sujets et conviennent à la représentation souple de la NMF, mais ils deviennent plus difficiles à résumer par une seule étiquette dans K-means. Les segments courts de BERTopic isolent plus facilement une scène, une description ou un échange verbal, mais ils fragmentent les développements longs et rendent les noms de personnages plus visibles. Le topic~6, marqué notamment par Gervaise et Lorilleux, illustre ainsi une cohérence qui tient à la fois au milieu populaire et à la signature lexicale de \textit{L'Assommoir}.
+
+Le nettoyage produit un second écart. Le pipeline classique retire explicitement de nombreux personnages, parmi lesquels Gervaise, Boccanera et Lorilleux, alors que la liste finale de BERTopic est beaucoup plus limitée. Il conserve en revanche les verbes dans sa représentation lexicale, ce qui facilite l'apparition de topics partiellement discursifs, comme la parole affective du topic~2 ou la supplication du topic~11. Une différence entre les résultats peut donc provenir du contenu conservé avant la modélisation, sans être causée par la seule opposition entre TF--IDF et embeddings.
+
+Les indicateurs internes ne peuvent pas davantage être placés sur une même échelle. L'erreur de reconstruction de la NMF, la silhouette de K-means, la silhouette calculée dans l'espace UMAP, le DBCV et la cohérence \(C_v\) de BERTopic évaluent des propriétés différentes, dans des espaces et sur des ensembles de segments différents. La silhouette de 0,376 obtenue lors de la sélection de BERTopic ne peut donc pas être directement opposée à celle de 0,0103 de K-means comme la preuve d'une supériorité du premier modèle ; elle porte uniquement sur les documents alors assignés à un topic, tandis que le DBCV légèrement négatif nuance lui-même la séparation globale.
+
+\subsection{Des correspondances thématiques réelles mais asymétriques}
+
+Malgré ces écarts, les résultats ne sont pas sans relation. Les mêmes grands domaines réapparaissent dans les trois analyses : travail, argent, corps, relations familiales, institutions, guerre et description des milieux. Les correspondances du tableau~\ref{tab:correspondances-nmf-kmeans-bertopic} sont établies à partir des termes caractéristiques et des passages représentatifs. Elles sont plusieurs-à-plusieurs : elles indiquent des proximités interprétatives, non une identité mathématique entre les partitions. Les topics de la NMF et les clusters de K-means sont numérotés à partir de 1, ceux de BERTopic à partir de 0.
+
+{\small
+\begin{longtable}{
+    @{}
+    p{0.29\textwidth}
+    >{\centering\arraybackslash}p{0.16\textwidth}
+    >{\centering\arraybackslash}p{0.16\textwidth}
+    >{\centering\arraybackslash}p{0.25\textwidth}
+    @{}
+}
+\caption{Principales correspondances entre NMF, K-means et BERTopic}
+\label{tab:correspondances-nmf-kmeans-bertopic}\\
+\toprule
+\textbf{Domaine interprétatif} & \textbf{NMF} & \textbf{K-means} & \textbf{BERTopic}\\
+\midrule
+\endfirsthead
+\multicolumn{4}{c}{\tablename\ \thetable{} --- suite}\\
+\toprule
+\textbf{Domaine interprétatif} & \textbf{NMF} & \textbf{K-means} & \textbf{BERTopic}\\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r}{\textit{Suite à la page suivante}}\\
+\endfoot
+\bottomrule
+\endlastfoot
+Travail et doctrine sociale & T2 & C19 & T1, avec une composante religieuse et politique\\
+Alimentation et vie populaire & T6 & C1 & T6\\
+Mine, rail et industrie & T11, T17 & C7, C24 & T9\\
+Finance et spéculation & T4 & C20 & T4\\
+Argent quotidien et dette & T8 & C21 & T14\\
+Couple, famille et affects & T1, T19, T24, T28 & C5, C6, C8, C17 & T2, T7, T16\\
+Chambre, corps et santé & T7, T21, T23 & C4, C13, C17 & T5, T10 ; aucun topic médical autonome\\
+Religion, pouvoir et institutions & T5, T12, T14, T15, T27 & C2, C10, C12, C14, C18, C27 & T1, T11, T12, T15\\
+Justice, enquête et preuve & T15 (par \textit{Vérité}), partiellement T13 & C2, C28 & T13\\
+Guerre et insurrection & T18, T29 & C15, C26 & T3\\
+Paysage, ville et monde rural & T3, T10, T16 & C11, C16, C29 & T0\\
+Vie domestique, mondaine et commerce & T9, T20, T26 & C3, C9, C22, C25 & T8, et partiellement T6\\
+Art et peinture & T22 & C23 & Aucun équivalent autonome\\
+\end{longtable}
+}
+
+Les convergences les plus fortes concernent les domaines appuyés sur un vocabulaire spécialisé. La finance réunit ainsi presque terme à terme le topic~4 de la NMF, le cluster~20 de K-means et le topic~4 de BERTopic ; l'argent quotidien rapproche de la même manière NMF~T8, K-means~C21 et BERTopic~T14. La guerre, la mine, le chemin de fer et l'alimentation populaire produisent également des ensembles immédiatement reconnaissables dans les trois modèles. Cette stabilité montre que certains champs lexicaux résistent à un changement important de segmentation et de représentation.
+
+BERTopic condense toutefois plusieurs distinctions conservées par les méthodes classiques. La mine et le chemin de fer, séparés par NMF~T17 et T11 ainsi que par K-means~C24 et C7, convergent dans son topic~9 autour des machines, des rails, des câbles et des infrastructures. La guerre militaire et l'insurrection, distinguées par NMF~T18 et T29 ou K-means~C26 et C15, sont réunies dans le topic~3. Le topic~8 absorbe pour sa part une partie des scènes domestiques, mondaines et commerciales que la NMF et K-means répartissent entre le magasin, le salon, le théâtre et les conversations ordinaires. Cette condensation offre une vue plus synthétique, mais elle fait perdre certaines oppositions utiles à l'interprétation littéraire.
+
+L'inverse se produit également. Le portrait physique forme dans BERTopic un topic~10 relativement autonome, tandis qu'il est davantage mêlé au corps, au désir ou aux scènes mondaines dans les deux approches classiques. Les marqueurs de dialogue, de plainte et de supplication structurent les topics~2 et~11 sans posséder d'équivalents exacts dans les listes classiques, plus fortement nominales. Ces écarts montrent que BERTopic ne découvre pas simplement une version plus courte des 29 groupes : il déplace les frontières entre thème, type de scène et modalité de discours.
+
+Deux absences sont particulièrement instructives. Le monde médical est clairement isolé par NMF~T21 et K-means~C13, mais il ne subsiste que partiellement dans le topic~5 de BERTopic, consacré plus largement au sommeil, à la chambre et à la défaillance corporelle. De même, la peinture constitue un ensemble très net avec NMF~T22 et K-means~C23, sans former de topic BERTopic autonome. Une méthode plus condensée peut donc rapprocher des passages sémantiquement voisins tout en rendant invisibles des domaines lexicaux moins volumineux.
+
+La convergence est enfin plus difficile à apprécier pour les thèmes transversaux. L'amour, le corps, la famille, la vie domestique ou l'espace apparaissent partout dans l'œuvre et disposent d'un lexique moins spécialisé que la mine ou la finance. Leur découpage dépend davantage de la longueur des segments et du mode d'affectation. Les trois méthodes convergent donc surtout lorsqu'un domaine est porté par un vocabulaire distinctif ou par l'univers d'un roman ; elles divergent davantage lorsque plusieurs dimensions narratives coexistent dans les mêmes passages.
+
+\subsection{Apports et limites propres à chaque approche}
+
+\paragraph{NMF.} La factorisation fournit la représentation la plus souple des trois méthodes : un même bloc peut combiner plusieurs composantes et rendre compte de la coexistence du travail, de la famille, de l'argent ou du milieu. Ses termes pondérés restent directement lisibles dans la matrice TF--IDF, ce qui facilite l'interprétation. Cette souplesse est toutefois partiellement perdue lorsque les visualisations attribuent à chaque bloc son seul topic dominant. Par ailleurs, le choix de 29 composantes ne repose pas sur un coude clairement identifiable et n'a pas été accompagné d'une étude de stabilité ; la NMF constitue donc une base classique interprétable, mais non une partition optimale démontrée.
+
+\paragraph{K-means.} L'affectation exclusive fournit une autre vue des mêmes proximités lexicales et produit de nombreuses correspondances avec la NMF. Cette convergence est attendue, puisque les deux modèles partagent les segments, le vocabulaire, la pondération TF--IDF et le nombre de groupes. Elle ne représente donc pas une validation indépendante de la NMF. Le score de silhouette de 0,0103 pour 29 clusters, très proche de zéro, montre en outre que les frontières restent peu marquées ; K-means doit être utilisé comme une exploration complémentaire plutôt que comme une preuve de la solidité des thèmes.
+
+La classification hiérarchique appliquée aux centroïdes de K-means confirme cette fragilité. Les noms enregistrés dans le notebook ne correspondent pas à la composition effective des groupes~2, 3 et~4. Les intitulés cohérents avec les clusters réellement réunis sont : « Pèlerinage, maladie et religion », « École, clergé, justice et encadrement institutionnel », « Vie mondaine, politique, commerce et argent », « Guerre, insurrection et conflit politique » et « Vie quotidienne, espaces sociaux et expériences individuelles ». La cinquième famille rassemble à elle seule 15 des 29 clusters et 61,5\,\% des segments ; cette synthèse est donc utile pour s'orienter, mais trop déséquilibrée pour valider une organisation stable en cinq ensembles.
+
+\paragraph{BERTopic.} Les plongements contextualisés et les segments courts permettent de rapprocher des formulations qui ne partagent pas nécessairement les mêmes mots. Le modèle produit une organisation plus condensée en 17 topics, exploitable pour suivre leur distribution entre les romans et au cours du temps. Cette réduction ne constitue pourtant pas une supériorité intrinsèque de BERTopic : elle résulte aussi des paramètres UMAP et HDBSCAN, du seuil de taille des groupes, du prétraitement et de la réattribution finale. Comme \(46\,952\) segments initialement atypiques ont été rapprochés a posteriori des noyaux découverts, les effectifs finaux décrivent surtout une allocation par proximité sémantique ; ils ne correspondent pas à 17 groupes denses directement observés dans les données.
+
+Les trois approches sont ainsi complémentaires. La NMF conserve le caractère composite des longs passages ; K-means met à l'épreuve une lecture catégorielle du même espace lexical ; BERTopic privilégie la proximité sémantique locale et facilite une lecture chronologique. Leurs désaccords ne constituent pas seulement des erreurs : ils montrent quelles catégories résistent au changement d'échelle et lesquelles dépendent du découpage ou du vocabulaire retenu.
+
+\subsection{Ce que la comparaison permet de conclure}
+
+Le résultat le plus robuste est la réapparition de plusieurs domaines malgré le changement de pipeline. Le travail, l'industrie, l'argent, les institutions religieuses, les rapports familiaux, la guerre et les espaces décrits structurent durablement le corpus zolien. La convergence entre NMF, K-means et BERTopic confirme donc l'existence de régularités thématiques internes à l'œuvre ; elle ne démontre ni l'identité des partitions ni la supériorité générale d'une méthode.
+
+Cette convergence atteste encore moins la spécificité de ces thèmes au naturalisme. L'amour, le portrait, la famille, la religion, la guerre ou le paysage appartiennent plus largement au roman du XIX\textsuperscript{e} siècle. Même le travail et les conditions matérielles, particulièrement importants pour le projet naturaliste, ne deviennent des marqueurs distinctifs qu'à condition d'être significativement plus présents ou traités différemment que dans d'autres courants. Le topic modeling identifie ici des caractéristiques candidates de l'univers zolien, non des critères suffisants pour définir un mouvement littéraire.
+
+Les associations les plus fortes avec une œuvre illustrent cette limite. Dans les résultats BERTopic, le topic~3 représente 38,9\,\% des segments de \textit{La Débâcle}, le topic~4 23,2\,\% de ceux de \textit{L'Argent}, le topic~6 49,2\,\% de ceux de \textit{L'Assommoir}, le topic~9 20,2\,\% de ceux de \textit{Germinal} et le topic~1 27,6\,\% de ceux de \textit{Travail}. Ces concentrations confirment la cohérence interprétative des topics, mais elles peuvent surtout refléter l'intrigue, le décor et le lexique propres à chaque roman.
+
+Les topics plus diffus, comme le topic~10 consacré aux apparences physiques, le topic~14 associé à la dette quotidienne ou, dans une moindre mesure, le topic~0 consacré aux espaces, constituent de meilleurs candidats pour une comparaison transversale. Ils ne sont pourtant pas automatiquement naturalistes : leur intérêt tient précisément à la possibilité de mesurer leur répartition dans d'autres œuvres. L'absence d'un topic clairement consacré à l'hérédité rappelle par ailleurs que les modèles saisissent plus facilement des champs lexicaux que les relations causales ou les principes esthétiques qui organisent le naturalisme.
+
 \section*{Conclusion du chapitre}
 \addcontentsline{toc}{section}{Conclusion du chapitre}
 
-Ce chapitre a présenté la construction du modèle thématique et les conditions méthodologiques dans lesquelles ses résultats peuvent être mobilisés pour étudier le naturalisme dans l'œuvre romanesque d'Émile Zola. L'utilisation de BERTopic a permis de combiner une représentation contextualisée des segments textuels avec des méthodes de réduction dimensionnelle, de regroupement et de caractérisation lexicale. La sélection du modèle ne reposait donc pas uniquement sur le nombre de topics obtenus, mais sur une procédure comprenant l'évaluation de 256 configurations, leur comparaison à partir de plusieurs indicateurs et l'examen de leur stabilité au moyen de différentes initialisations aléatoires.
+BERTopic confirme plusieurs structures déjà visibles dans la NMF et K-means, tout en les réorganisant à une échelle plus locale et plus sémantique. Il condense la mine et le rail, la guerre et l'insurrection ou encore différentes formes de sociabilité, mais isole aussi le portrait physique et certaines modalités de parole. Les convergences sont les plus nettes pour les lexiques spécialisés ; les divergences concernent davantage les motifs transversaux et les domaines moins volumineux, comme la médecine ou la peinture.
 
-Le modèle finalement retenu distingue 33 topics. Ce choix vise à préserver la diversité thématique du corpus et à éviter qu'une partition trop générale ne rassemble artificiellement des réalités sociales, matérielles ou narratives différentes. Une solution limitée à huit topics aurait offert une lecture plus synthétique, mais elle aurait également réduit la précision de l'analyse. Le modèle choisi permet ainsi de mieux différencier les espaces sociaux, les métiers, les institutions, les échanges économiques, les objets du quotidien et les diverses formes de souffrance représentées dans les romans. Les indicateurs mobilisés ne prouvent pas l'existence d'un découpage unique et définitif du corpus, mais ils permettent de vérifier que la partition retenue présente une cohérence suffisante et qu'elle ne résulte pas seulement d'une initialisation particulière de l'algorithme.
+Le bilan des deux premiers chapitres doit donc rester double. D'un côté, les analyses non supervisées dégagent un ensemble cohérent d'hypothèses sur le corps, le travail, l'argent, les institutions et les milieux. De l'autre, elles ne permettent pas de distinguer ce qui relève du naturalisme, de la signature de Zola ou du contenu particulier de ses romans. Le passage d'une méthode à l'autre renforce la plausibilité de certains motifs, mais seul un corpus comparatif peut en évaluer la portée littéraire.
 
-L'étude des dix termes les plus représentatifs de chaque topic a ensuite permis d'évaluer leur degré de proximité avec le naturalisme. L'adoption de plusieurs niveaux de gradation évite de réduire cette relation à une opposition trop rigide entre topics naturalistes et non naturalistes. Certains ensembles lexicaux sont directement associés à des dimensions centrales de l'esthétique naturaliste, telles que le travail, les milieux populaires, l'argent, les déterminismes sociaux et corporels ou encore les manifestations de la souffrance. D'autres n'entretiennent avec le naturalisme qu'une relation indirecte, tandis que certains correspondent principalement à des situations, à des objets ou à des univers narratifs particuliers. Le naturalisme apparaît dès lors non comme un thème isolé, mais comme une logique transversale qui organise plusieurs dimensions de la représentation zolienne du monde social.
-
-Les visualisations temporelles ont enfin permis de replacer ces ensembles thématiques dans la chronologie de la production romanesque de Zola. Elles indiquent que les préoccupations associées au naturalisme ne sont pas limitées à un roman ou à une période unique de sa carrière. Leur importance varie en fonction des œuvres, des milieux représentés et des enjeux propres à chaque récit, mais plusieurs d'entre elles réapparaissent à différents moments du corpus. Cette distribution invite néanmoins à distinguer la permanence d'une préoccupation de la régularité de sa fréquence : la présence durable d'un topic n'implique pas une intensité constante, mais peut se manifester par des phases d'apparition, d'accentuation et d'atténuation.
-
-La modélisation thématique offre ainsi un moyen d'observer, à l'échelle de l'ensemble du corpus, des régularités et des évolutions qui seraient plus difficiles à saisir par la seule lecture linéaire des romans. Elle ne se substitue toutefois pas à l'interprétation littéraire : la signification d'un topic dépend des termes qui le caractérisent, des passages auxquels il est associé et du contexte narratif dans lequel il apparaît. Les résultats obtenus constituent donc moins une conclusion définitive sur le naturalisme zolien qu'un cadre d'analyse permettant d'articuler les tendances quantitatives du corpus avec l'étude des choix sociaux, narratifs et esthétiques propres à l'écriture de Zola.
+Le chapitre suivant déplacera ainsi l'analyse de l'exploration non supervisée vers l'apprentissage statistique sur un corpus réunissant Zola, d'autres auteurs naturalistes et des auteurs non naturalistes. Une régression linéaire pourra mesurer l'association entre des caractéristiques textuelles et une variable continue, telle que la fréquence d'un motif ; si la variable à prédire est directement l'appartenance binaire au naturalisme, une régression logistique sera plus adaptée. Une modélisation bayésienne, idéalement hiérarchique, permettra de quantifier l'incertitude et de tenir compte de l'imbrication des segments dans les œuvres et des œuvres dans les auteurs, ainsi que des effets de période et de longueur. La séparation des auteurs et des romans entre apprentissage et évaluation sera enfin indispensable pour éviter qu'un modèle présenté comme détecteur du naturalisme n'apprenne seulement à reconnaître Zola ou quelques œuvres particulières.
