@@ -2,47 +2,39 @@
 
 \subsection{Objectif et organisation du corpus}
 
-Ce chapitre prolonge l'analyse thématique statique menée au chapitre~1 en examinant la distribution chronologique des topics dans le corpus romanesque d'Émile Zola. Il ne s'agit pas d'un modèle thématique dynamique au sens génératif du terme : les dates de publication ne participent ni à la formation des groupes ni à leur représentation globale. Elles sont mobilisées après la sélection du modèle BERTopic afin d'observer la fréquence de topics fixes au fil de la carrière de l'écrivain. Cette distinction permet d'étudier les récurrences et les inflexions thématiques sans imposer au préalable une trajectoire temporelle aux documents.
+Ce chapitre prolonge l'analyse thématique statique menée au chapitre~1 en étudiant la distribution des topics dans la chronologie de l'œuvre romanesque d'Émile Zola. Il ne met toutefois pas en œuvre un modèle thématique dynamique au sens génératif : l'année de publication n'intervient ni dans le calcul des embeddings, ni dans la réduction de dimension, ni dans la formation ou la représentation globale des groupes. Elle n'est mobilisée qu'après la sélection du modèle BERTopic, afin de suivre la fréquence de topics fixes au cours de la carrière de l'écrivain. Cette démarche permet d'observer des permanences et des inflexions thématiques sans imposer au préalable une trajectoire temporelle aux documents.
 
-Le corpus est identique à celui du chapitre précédent\footnote{Voir le chapitre~1, section consacrée à la présentation des données.}. Chaque roman est associé à son année de publication, de manière à replacer les segments dans la chronologie de l'œuvre. Le prétraitement reprend également le protocole déjà décrit : segmentation des textes, suppression des mots vides et lemmatisation. Deux représentations complémentaires sont toutefois conservées. Les segments non lemmatisés servent au calcul des embeddings sémantiques, tandis que leur version lemmatisée est utilisée pour la représentation lexicale des topics et le calcul de la cohérence. La section suivante précise le rôle de ces deux entrées dans l'architecture de BERTopic.
+Le corpus source reprend les mêmes œuvres que celui du chapitre précédent\footnote{Voir le chapitre~1, section consacrée à la présentation des données.} : il réunit 31 romans publiés entre 1865 et 1903. L'année est extraite du nom de chaque fichier, puis les œuvres et leurs segments sont classés chronologiquement. Chaque segment conserve ainsi son roman d'origine, son année de publication et sa position dans le texte.
+
+Deux versions synchronisées de chaque segment sont utilisées. Le texte non lemmatisé sert au calcul des embeddings avec le modèle \texttt{dangvantuan/\allowbreak sentence-\allowbreak camembert-\allowbreak base}, qui produit des vecteurs de 768 dimensions. Une seconde version est obtenue avec le modèle spaCy \texttt{fr\_core\_news\_lg} : seuls les noms, les adjectifs et les verbes sont conservés sous leur forme lemmatisée, tandis que la ponctuation, les nombres, les espaces et les lemmes de moins de deux caractères sont écartés. Le prétraitement n'applique donc pas, à ce stade, de liste générale de mots vides.
+ Les segments lemmatisés servent à la représentation lexicale des topics et au calcul de leur cohérence, tandis que les textes non lemmatisés préservent le contexte nécessaire à leur représentation sémantique.
 
 \subsection{Segmentation et statistiques descriptives}
 
-Les romans sont découpés en segments de 128 mots. Ce choix est motivé par la nécessité d'avoir cette fenetres de mots pour le calcul des embeddings sémantiques avec le modèle \texttt{dangvantuan/sentence-camembert-base}. 
+La segmentation est directement déterminée par la capacité du modèle \texttt{sentence-\allowbreak camembert-\allowbreak base}. Celui-ci accepte au maximum 128 tokens, tokens spéciaux compris. Le programme vise donc des segments d'environ 110 tokens de contenu et réserve l'espace nécessaire aux tokens ajoutés par CamemBERT. Les unités textuelles non vides sont regroupées tant que cette limite n'est pas dépassée ; lorsqu'une unité est trop longue pour tenir seule, elle est exceptionnellement découpée. La fin de chaque roman est systématiquement conservée, même lorsqu'elle forme un segment très court.
 
 \begin{table}[htbp]
     \centering
-    \caption{Statistiques descriptives du nombre de mots par segment de quarante phrases}
+    \caption{Longueur des segments produits, en tokens CamemBERT}
     \label{tab:stat_phrases_paquet}
     \begin{tabular}{lr}
         \toprule
-        \textbf{Indicateur} & \textbf{Nombre de mots} \\
+        \textbf{Indicateur} & \textbf{Nombre de tokens} \\
         \midrule
-        Nombre de segments & \(5\,327\) \\
-        Moyenne             & \(785{,}298\) \\
-        Écart-type          & \(212{,}129\) \\
-        Minimum             & \(42\) \\
-        Premier quartile    & \(636\) \\
-        Médiane             & \(753\) \\
-        Troisième quartile  & \(902{,}5\) \\
-        Maximum             & \(2\,944\) \\
+        Nombre de segments       & \(61\,435\) \\
+        Moyenne                  & \(105{,}37\) \\
+        Écart-type               & \(19{,}77\) \\
+        Minimum                  & \(4\) \\
+        Cinquième percentile     & \(65\) \\
+        Premier quartile         & \(96\) \\
+        Médiane                  & \(112\) \\
+        Troisième quartile       & \(120\) \\
+        Quatre-vingt-quinzième percentile & \(127\) \\
+        Maximum                  & \(128\) \\
         \bottomrule
     \end{tabular}
 \end{table}
 
-Un segment contient en moyenne 785 mots et la médiane s'établit à 753 mots.
-La moitié des documents se situe entre 636 et 902,5 mots, ce qui indique une
-taille relativement homogène pour la majeure partie du corpus malgré un
-écart-type de 212 mots. L'amplitude, de 42 à \(2\,944\) mots, s'explique par
-quelques observations atypiques : les derniers segments de certains romans
-peuvent réunir moins de quarante phrases, tandis que des phrases
-particulièrement longues augmentent ponctuellement la taille d'une unité.
+Cette procédure produit d'abord \(61\,435\) segments. Leur longueur moyenne s'élève à 105,37 tokens et leur médiane à 112 tokens. La moitié des segments se situe entre 96 et 120 tokens ; les cinquième et quatre-vingt-quinzième percentiles atteignent respectivement 65 et 127 tokens. La distribution reste donc concentrée autour de la taille visée, tout en respectant le plafond de 128 tokens imposé par le modèle. Les valeurs les plus faibles correspondent à des unités très brèves qui ne peuvent être rattachées à une unité voisine sans franchir ce plafond ; elles sont conservées plutôt qu'écartées.
 
-L'examen des valeurs extrêmes\footnote{Le code correspondant est présenté en
-annexe.} confirme leur caractère marginal. Douze segments contiennent moins
-de 300 mots, soit environ \(0{,}23\,\%\) du corpus, et vingt-quatre dépassent
-\(1\,500\) mots, soit \(0{,}45\,\%\). Un seul compte plus de \(2\,000\) mots.
-Au total, \(5\,291\) segments, soit \(99{,}32\,\%\) du jeu de données, sont
-compris entre 300 et \(1\,500\) mots. La segmentation offre donc une base
-globalement régulière pour la modélisation, sans masquer la variabilité
-ponctuelle de la syntaxe et de la composition des romans.
+La lemmatisation laisse ensuite trois segments sans contenu lexical exploitable --- deux occurrences de \og Ah!\fg{} et une de \og Oh!\fg{} --- qui sont retirés. Le corpus effectivement transmis à BERTopic comprend ainsi \(61\,432\) segments issus de 31 romans. Le tableau de données final associe à chacun le titre du roman, l'année de publication, le rang chronologique de l'œuvre, sa position dans le roman, le texte non lemmatisé, son nombre de tokens CamemBERT et sa version lemmatisée. Les embeddings correspondants forment une matrice de \(61\,432 \times 768\), dont l'alignement avec les segments est contrôlé avant la modélisation.
