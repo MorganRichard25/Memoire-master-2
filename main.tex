@@ -30,7 +30,11 @@ Je remercie également mes proches pour leur soutien et leurs encouragements, je
 \chapter*{Résumé}
 \addcontentsline{toc}{chapter}{Résumé}
 
-Ce mémoire porte sur...
+Ce mémoire examine dans quelle mesure la modélisation thématique et la classification automatique peuvent faire apparaître des marqueurs du naturalisme sans les confondre avec la signature d'Émile Zola, les thèmes propres à ses romans ou les biais de constitution du corpus. Les trente et un romans de Zola sont d'abord étudiés avec la factorisation en matrices non négatives et K-means, puis avec BERTopic afin d'observer la répartition et les recompositions chronologiques des principaux domaines lexicaux. Une classification supervisée confronte ensuite le signal appris à partir de Zola à des œuvres naturalistes et à des œuvres relevant d'autres courants, écrites par des auteurs absents de l'apprentissage. Deux conditions sont comparées, avec et sans suppression automatique des noms propres.
+
+Les analyses non supervisées font réapparaître plusieurs domaines liés au travail, à l'argent, au corps, à la famille, aux institutions, à la guerre et aux espaces. Les convergences sont particulièrement nettes pour les vocabulaires spécialisés, mais elles décrivent d'abord l'univers zolien et peuvent être fortement portées par certains romans. Dans l'expérience comparative, le modèle classe correctement 18 œuvres sur 25 avec les noms propres et 17 sur 25 après leur suppression. Le classement continu reste proche dans les deux conditions, ce qui suggère que le signal ne dépend pas uniquement des noms détectés. Son transfert demeure toutefois partiel : le rappel des œuvres naturalistes est limité, Zola constitue l'unique auteur positif de l'apprentissage et la chronologie reste un facteur de confusion possible. Les méthodes mobilisées permettent ainsi d'identifier des marqueurs candidats et une proximité textuelle mesurable, mais elles ne suffisent pas encore à isoler un style naturaliste indépendant de l'auteur, des thèmes et de la période.
+
+\noindent\textbf{Mots-clés :} naturalisme ; Émile Zola ; modélisation thématique ; BERTopic ; classification automatique ; stylométrie.
 
 \tableofcontents
 \listoffigures
@@ -43,6 +47,7 @@ Ce mémoire porte sur...
 \input{chapitres/chapitre_1}
 \input{chapitres/chapitre_2}
 \input{chapitres/chapitre_3}
+\input{chapitres/conclusion}
 \input{chapitres/chapitre_4}
 
 \nocite{*}
