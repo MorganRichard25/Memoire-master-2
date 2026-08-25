@@ -1,0 +1,76 @@
+\section{Résultats des expériences ANP et SNP}
+\label{sec:resultats_anp_snp}
+
+Les résultats sont présentés séparément pour chacune des deux conditions. L'évaluation principale porte sur les 25 œuvres du test, tandis que les mesures calculées sur les segments ne sont utilisées que comme diagnostics. Les scores par auteur reçoivent une attention particulière, car les trois écrivains ne sont pas représentés par le même nombre de romans.
+
+\subsection{Résultats de l'expérience ANP}
+
+Sur l'ensemble de validation, la procédure retient l'analyse discriminante linéaire appliquée à des segments de 1~000 mots, avec un seuil de décision fixé à $0{,}50$. Le F1 macro moyen par auteur atteint $0{,}583$ et la \textit{balanced accuracy} moyenne $0{,}675$. Les trois longueurs de segments testées produisent exactement les mêmes résultats principaux au niveau des œuvres ; la taille de 1~000 mots est donc retenue par la règle de départage prévue dans le protocole, et non parce qu'elle serait nettement supérieure. Les résultats restent variables selon les auteurs de validation : le F1 macro vaut $0{,}750$ pour Camille Lemonnier, $0{,}667$ pour Guy de Maupassant et $0{,}333$ pour Georges Eekhoud. Ce dernier résultat ne repose toutefois que sur deux œuvres.
+
+Au niveau des segments du test, l'exactitude atteint $0{,}682$ et le F1 macro $0{,}670$. Le rappel est de $0{,}832$ pour la classe « autre courant » et de $0{,}515$ pour la classe naturaliste. Ces valeurs décrivent le comportement local du modèle, mais elles ne doivent pas être lues comme si les 1~889 segments constituaient autant d'observations indépendantes.
+
+Après agrégation des scores à l'échelle des romans, 18 œuvres sur 25 sont correctement classées. L'exactitude est de $0{,}720$, le F1 macro de $0{,}713$ et la \textit{balanced accuracy} de $0{,}728$. Le modèle reconnaît onze des douze œuvres relevant d'un autre courant et sept des treize œuvres naturalistes. Pour cette dernière classe, la précision atteint $0{,}875$, tandis que le rappel reste limité à $0{,}538$. Ainsi, lorsqu'une œuvre est déclarée naturaliste, cette décision est le plus souvent correcte, mais une partie importante des romans naturalistes ne franchit pas le seuil retenu.
+
+Le tableau~\ref{tab:resultats_anp_auteurs} détaille les résultats pour chacun des trois auteurs du test. L'AUC est calculée à partir des scores continus et ne dépend donc pas du seuil de $0{,}50$.
+
+\begin{table}[H]
+    \centering
+    \caption{Résultats de l'expérience ANP par auteur du test}
+    \label{tab:resultats_anp_auteurs}
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X c c c c c c}
+        \toprule
+        \textbf{Auteur} & \textbf{Correctes} & \textbf{F1} & \textbf{BA}
+        & \shortstack{\textbf{Rappel}\\\textbf{nat.}}
+        & \shortstack{\textbf{Rappel}\\\textbf{autre}}
+        & \textbf{AUC} \\
+        \midrule
+        Goncourt & 6/10 & 0,583 & 0,750 & 0,500 & 1,000 & 0,813 \\
+        J.-K. Huysmans & 7/9 & 0,750 & 0,750 & 0,667 & 0,833 & 0,889 \\
+        Octave Mirbeau & 5/6 & 0,778 & 0,750 & 0,500 & 1,000 & 0,875 \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+En accordant le même poids à chaque auteur, le F1 macro moyen s'établit à $0{,}704$, la \textit{balanced accuracy} moyenne à $0{,}750$ et l'AUC moyenne à $0{,}859$. Cette dernière valeur indique que l'ordre des œuvres selon leur score reste informatif, même lorsque le passage à une décision binaire produit plusieurs faux négatifs.
+
+Les sept erreurs permettent de préciser ce résultat. Chez les Goncourt, \textit{Charles Demailly}, \textit{Chérie}, \textit{Madame Gervaisais} et \textit{Manette Salomon} sont étiquetés naturalistes mais classés dans l'autre catégorie. Chez Huysmans, \textit{Marthe, histoire d'une fille} constitue un faux négatif, tandis que \textit{En rade} est le seul faux positif de l'expérience. Enfin, \textit{Le Calvaire} de Mirbeau n'est pas reconnu comme naturaliste. Certaines décisions sont proches du seuil, notamment celles de \textit{Marthe} ($0{,}477$) et de \textit{Madame Gervaisais} ($0{,}465$). D'autres sont beaucoup plus tranchées : \textit{Charles Demailly} et \textit{Chérie} n'obtiennent respectivement que $0{,}072$ et $0{,}189$.
+
+L'examen postérieur des coefficients montre enfin la diversité du signal mobilisé. Parmi les termes fortement associés au prototype zolien figurent des formes discursives comme « lorsque », « tandis », « eut » ou « regardait », des mots liés aux personnes et aux milieux, tels que « enfant », « femme » et « milieu », mais aussi des noms comme « Rougon », « Saccard » ou « Jacques ». À l'inverse, « Bouvard », « Pécuchet », « Arnoux » et « Dambreuse » comptent parmi les termes associés à l'autre classe. Le classement ANP repose donc sur un ensemble mêlant habitudes lexicales, contenus thématiques et éléments propres aux univers romanesques.
+
+\subsection{Résultats de l'expérience SNP}
+
+Dans l'expérience SNP, la validation retient l'analyse discriminante linéaire et des segments de 1~000 mots. Le seuil sélectionné est fixé à $0{,}40$. Le F1 macro moyen par auteur atteint $0{,}637$ et la \textit{balanced accuracy} moyenne $0{,}730$. Les F1 obtenus séparément sont de $0{,}829$ pour Guy de Maupassant, $0{,}750$ pour Camille Lemonnier et $0{,}333$ pour Georges Eekhoud. La sélection demeure donc fragile, notamment parce que le dernier auteur n'est représenté que par deux œuvres.
+
+Le diagnostic au niveau des segments donne une exactitude de $0{,}639$ et un F1 macro de $0{,}600$. Le rappel atteint $0{,}904$ pour la classe « autre courant » et $0{,}343$ pour la classe naturaliste. Ces mesures décrivent les décisions effectuées sur les passages, sans constituer l'unité principale d'interprétation.
+
+Au niveau des œuvres, 17 romans sur 25 sont correctement classés. L'exactitude atteint $0{,}680$, le F1 macro $0{,}653$ et la \textit{balanced accuracy} $0{,}692$. Les douze œuvres de la classe « autre courant » sont reconnues, de même que cinq des treize œuvres naturalistes. La précision de la classe naturaliste est donc de $1{,}000$, pour un rappel de $0{,}385$. Au seuil retenu, le modèle adopte ainsi un comportement très conservateur : aucune œuvre de l'autre classe n'est déclarée naturaliste, mais huit œuvres naturalistes sont laissées de côté.
+
+Le détail par auteur est présenté dans le tableau~\ref{tab:resultats_snp_auteurs}.
+
+\begin{table}[H]
+    \centering
+    \caption{Résultats de l'expérience SNP par auteur du test}
+    \label{tab:resultats_snp_auteurs}
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X c c c c c c}
+        \toprule
+        \textbf{Auteur} & \textbf{Correctes} & \textbf{F1} & \textbf{BA}
+        & \shortstack{\textbf{Rappel}\\\textbf{nat.}}
+        & \shortstack{\textbf{Rappel}\\\textbf{autre}}
+        & \textbf{AUC} \\
+        \midrule
+        Goncourt & 5/10 & 0,495 & 0,688 & 0,375 & 1,000 & 0,688 \\
+        J.-K. Huysmans & 7/9 & 0,679 & 0,667 & 0,333 & 1,000 & 0,944 \\
+        Octave Mirbeau & 5/6 & 0,778 & 0,750 & 0,500 & 1,000 & 0,875 \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+Le F1 macro moyen donnant le même poids aux auteurs vaut $0{,}650$, la \textit{balanced accuracy} moyenne $0{,}701$ et l'AUC moyenne $0{,}836$. Le cas de Huysmans illustre la différence entre le classement continu et la décision au seuil : l'AUC atteint $0{,}944$, alors qu'une seule de ses trois œuvres naturalistes est reconnue comme telle. Dans cet échantillon, les scores ordonnent donc assez nettement ses œuvres, mais le seuil de $0{,}40$ ne transforme pas entièrement cet ordre en classifications correctes.
+
+Les huit erreurs sont toutes des faux négatifs. Elles concernent \textit{Charles Demailly}, \textit{Chérie}, \textit{Madame Gervaisais}, \textit{Manette Salomon} et \textit{Renée Mauperin} chez les Goncourt, \textit{En ménage} et \textit{Marthe, histoire d'une fille} chez Huysmans, ainsi que \textit{Le Calvaire} chez Mirbeau. Le score de \textit{La Fille Élisa}, correctement classée, se situe juste au-dessus du seuil à $0{,}414$. La plupart des œuvres mal classées reçoivent en revanche des scores plus éloignés de la frontière de décision ; \textit{Charles Demailly} et \textit{Chérie} obtiennent par exemple $0{,}058$ et $0{,}091$.
+
+Après la suppression automatique des noms propres, les termes les plus associés au prototype zolien comprennent notamment « lorsque », « ça », « nouveau », « frère », « regardait », « milieu », « enfant », « rire », « face » et « femme ». Des termes comme « abbé », « curé » ou « prêtre » contribuent aussi aux scores de certaines œuvres de Mirbeau. Ces coefficients font apparaître à la fois des habitudes lexicales, des verbes de perception ou de parole et des champs thématiques liés à la parenté, au corps, à la religion ou aux milieux sociaux. Leur interprétation reste postérieure à l'évaluation : ils servent à décrire le comportement du modèle, et non à modifier ses paramètres après consultation du test.

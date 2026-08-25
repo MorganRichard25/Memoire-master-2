@@ -1,0 +1,60 @@
+\section{Comparaison des expériences ANP et SNP}
+\label{sec:comparaison_anp_snp}
+
+Les deux expériences ne se distinguent que par le traitement des noms propres. Elles peuvent donc être mises en regard comme les deux conditions d'une même expérience d'ablation. Le tableau~\ref{tab:comparaison_anp_snp} rassemble les principaux résultats sur le test. La condition ANP obtient les meilleures mesures globales, mais son avantage reste modéré : elle classe correctement 18 œuvres sur 25, contre 17 pour la condition SNP.
+
+\begin{table}[H]
+    \centering
+    \caption{Comparaison des résultats ANP et SNP sur les œuvres du test}
+    \label{tab:comparaison_anp_snp}
+    \small
+    \setlength{\tabcolsep}{7pt}
+    \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X c c}
+        \toprule
+        \textbf{Indicateur} & \textbf{ANP} & \textbf{SNP} \\
+        \midrule
+        Œuvres correctement classées & 18/25 & 17/25 \\
+        Exactitude & 0,720 & 0,680 \\
+        F1 macro par œuvre & 0,713 & 0,653 \\
+        \textit{Balanced accuracy} par œuvre & 0,728 & 0,692 \\
+        F1 macro moyen par auteur & 0,704 & 0,650 \\
+        \textit{Balanced accuracy} moyenne par auteur & 0,750 & 0,701 \\
+        AUC moyenne par auteur & 0,859 & 0,836 \\
+        Rappel de la classe naturaliste & 0,538 & 0,385 \\
+        Rappel de la classe « autre courant » & 0,917 & 1,000 \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\subsection{Effet du retrait des noms propres}
+
+L'écart le plus visible concerne le rappel de la classe naturaliste. En conservant les noms propres, sept des treize œuvres naturalistes sont reconnues ; après leur suppression, cinq seulement le sont. En contrepartie, le SNP ne produit aucun faux positif : toutes les œuvres qu'il déclare naturalistes le sont selon les étiquettes du corpus. Cette précision parfaite ne doit cependant pas masquer son faible rappel. Elle traduit surtout une décision plus conservatrice, qui laisse huit œuvres naturalistes sous le seuil.
+
+L'avantage global de l'ANP tient à très peu de cas. Les deux conditions donnent la même étiquette à 22 œuvres sur 25. \textit{Renée Mauperin} et \textit{En ménage} sont correctement classées uniquement en ANP, tandis que \textit{En rade} est correctement classé uniquement en SNP. Deux changements favorisent donc l'ANP et un seul le SNP. Sur un échantillon aussi réduit, cette différence ne permet pas d'établir la supériorité générale de la condition avec noms propres.
+
+Cette prudence est renforcée par la validation, où l'ordre était inversé : le F1 moyen par auteur atteignait $0{,}637$ en SNP, contre $0{,}583$ en ANP. Le passage de trois auteurs de validation à trois autres auteurs de test suffit donc à modifier la condition la mieux classée. Ce résultat signale davantage une sélection instable sur de petits effectifs qu'un avantage régulier des noms propres.
+
+Les scores continus conduisent à la même prudence. Leur corrélation de rang atteint $0{,}972$ : les deux modèles ordonnent presque toujours les romans de la même manière. Tous les scores SNP sont néanmoins inférieurs à leur équivalent ANP, leur moyenne passant de $0{,}379$ à $0{,}235$. Ce déplacement ne mesure pas directement la « part » des noms propres, car les modèles sont réentraînés dans deux espaces lexicaux différents et leurs seuils ont été réglés séparément, à $0{,}50$ et $0{,}40$. Il montre plutôt que la suppression modifie l'échelle des scores et réduit la propension du modèle à attribuer la classe naturaliste, sans bouleverser l'ordre général des œuvres.
+
+L'effet varie d'ailleurs selon les auteurs. Les décisions concernant Mirbeau sont identiques dans les deux expériences. Chez Huysmans, l'AUC progresse en SNP alors que le F1 diminue, ce qui indique un classement continu pertinent mais mal traduit par le seuil. La baisse moyenne provient surtout des Goncourt. Le retrait des noms propres n'a donc pas un effet uniforme sur les différents univers littéraires.
+
+\subsection{Nature du signal et effet de la chronologie}
+
+Le maintien d'une AUC moyenne de $0{,}836$ en SNP constitue un résultat important : les personnages et les lieux ne suffisent pas à expliquer le classement. Un signal lexical appris à partir de Zola subsiste chez des auteurs absents de l'apprentissage. Il ne correspond pas pour autant à un style naturaliste isolé. Les termes encore disponibles associent des formes discursives, comme « lorsque » ou « regardait », à des mots liés à la parenté, au corps, à la religion et aux milieux sociaux. Avec des unigrammes TF--IDF, habitudes d'écriture et contenu des romans restent ainsi mêlés.
+
+La chronologie représente un autre facteur de confusion. Lorsque le test est limité aux 21 œuvres publiées entre 1865 et 1903, les deux conditions atteignent la même exactitude de $0{,}714$. Les F1 macro restent proches, avec $0{,}697$ en ANP et $0{,}679$ en SNP. La petite avance globale de l'ANP n'est donc pas robuste à cette restriction. Celle-ci conserve toutefois des écarts de dates importants à l'intérieur de la période et ne neutralise pas l'évolution propre à chaque écrivain. L'appariement d'œuvres des deux classes publiées à cinq ans d'écart au maximum va dans le même sens : l'ANP ordonne correctement trois des quatre paires et le SNP deux. Quatre paires sont trop peu nombreuses pour lever le doute sur un effet de période.
+
+\subsection{Portée, limites et prolongements}
+
+Le protocole présente plusieurs points forts. Les auteurs de l'apprentissage, de la validation et du test sont disjoints, les copies exactes sont recherchées, et l'évaluation principale porte sur les œuvres plutôt que sur des segments corrélés. Le calcul séparé par auteur évite aussi que les Goncourt, plus représentés, déterminent seuls le résultat. Enfin, l'ablation ANP/SNP porte sur les mêmes textes et montre que le signal ne disparaît pas avec les identifiants fictionnels. Les deux modèles font nettement mieux qu'une décision fondée uniquement sur la classe majoritaire du test, qui ne classerait correctement que 13 œuvres sur 25.
+
+Ces garanties ne suffisent cependant pas à faire de l'expérience une validation définitive. Zola demeure l'unique auteur positif de l'apprentissage : le modèle apprend nécessairement un mélange de naturalisme, d'idiolecte zolien et de contenus propres à ses romans. Le test ne réunit que trois auteurs et 25 œuvres, et il a été consulté pendant le développement. Les catégories littéraires peuvent en outre être discutées pour certaines œuvres de transition. Enfin, la suppression automatique des noms propres n'est pas infaillible et son taux d'erreur n'a pas été mesuré sur ce corpus du XIX\textsuperscript{e} siècle.
+
+Plusieurs tests complémentaires permettraient d'approfondir ce travail. La priorité serait de constituer un nouveau test réellement aveugle, avec davantage d'auteurs et des œuvres mieux équilibrées par période. L'apprentissage pourrait ensuite intégrer plusieurs écrivains naturalistes, puis évaluer successivement un auteur tenu à l'écart ; une telle validation distinguerait mieux le courant littéraire de la seule signature de Zola. Un modèle fondé uniquement sur l'année fournirait par ailleurs un témoin simple, à dépasser avant d'attribuer les résultats au texte. Enfin, la comparaison de familles de traits --- mots-outils, ponctuation, n-grammes de caractères, catégories grammaticales ou relations syntaxiques --- aiderait à séparer les régularités formelles du vocabulaire thématique. Pour la condition SNP, remplacer les entités par des catégories génériques, comme \texttt{[PER]} ou \texttt{[LOC]}, et vérifier manuellement un échantillon permettrait aussi de conserver la structure des phrases tout en contrôlant la qualité de la reconnaissance.
+
+\section*{Conclusion du chapitre}
+\addcontentsline{toc}{section}{Conclusion du chapitre}
+
+Ce chapitre montre qu'une partie du signal appris à partir de Zola se transfère à des œuvres naturalistes de Goncourt, Huysmans et Mirbeau, alors même que ces auteurs sont absents de l'apprentissage. Les résultats sont supérieurs à une règle majoritaire et le classement des œuvres reste largement informatif. Surtout, la forte proximité entre les scores ANP et SNP indique que ce transfert ne repose pas uniquement sur les noms de personnages ou de lieux.
+
+La réponse à la problématique demeure toutefois partielle. Le modèle met en évidence une proximité textuelle avec Zola ; il ne démontre pas encore l'existence de marqueurs du naturalisme indépendants de l'auteur, des thèmes et de la chronologie. Le faible rappel des œuvres naturalistes, la variation entre auteurs et la fragilité des contrôles temporels invitent à ne pas transformer ces résultats en critères de classement littéraire. Ils restent néanmoins exploitables dans le cadre d'un test exploratoire : ils valident l'intérêt du protocole, rendent visibles ses principaux biais et fournissent une base précise pour une expérimentation ultérieure, plus large et véritablement confirmatoire.

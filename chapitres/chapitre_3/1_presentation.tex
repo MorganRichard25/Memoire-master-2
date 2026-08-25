@@ -1,0 +1,75 @@
+\section{Présentation du protocole expérimental}
+\label{sec:protocole_classification}
+
+Les deux premiers chapitres ont fait apparaître plusieurs régularités lexicales et thématiques dans l'œuvre romanesque de Zola. Ces motifs constituent des marqueurs candidats, mais ils ne permettent pas encore de déterminer ce qui relève du naturalisme, de la signature personnelle de l'écrivain ou du contenu particulier de ses romans. Le présent chapitre déplace donc l'analyse vers un corpus comparatif et vers une tâche de classification supervisée. Il s'agit de déterminer si une signature textuelle apprise à partir de Zola se retrouve dans des œuvres d'auteurs absents de l'apprentissage, et si le modèle attribue des scores plus élevés aux romans étiquetés naturalistes qu'aux romans rattachés à d'autres courants.
+
+Deux notebooks mettent cette hypothèse à l'épreuve. Le premier conserve les noms propres et correspond à la condition ANP, « avec noms propres »\footnote{Notebook ANP : \path{zola_vs_naturaliste_ANP.ipynb}.}. Le second reprend la même expérience après leur suppression automatique ; il correspond à la condition SNP, « sans noms propres »\footnote{Notebook SNP : \path{zola_vs_naturaliste_SNP.ipynb}.}. Les œuvres retenues, leur répartition, leur segmentation, leur représentation et les modèles comparés sont identiques. Seul le traitement des noms propres varie. La comparaison des deux conditions constitue ainsi une expérience d'ablation contrôlée, destinée à mesurer la part de ces indices dans les décisions du classifieur.
+
+\subsection{Question de recherche et unité de classification}
+
+Le protocole ne cherche pas à répartir définitivement les écrivains entre deux groupes, l'un naturaliste et l'autre non naturaliste. Une telle opposition serait peu adaptée aux trajectoires étudiées : plusieurs auteurs se sont rapprochés du naturalisme à un moment de leur carrière avant de s'en éloigner, tandis que certaines œuvres occupent une position intermédiaire. Les étiquettes « naturaliste » et « autre courant » sont donc attribuées au niveau de l'œuvre. Chacun des auteurs utilisés pour la validation et le test est représenté dans les deux classes.
+
+La question effectivement posée est plus restreinte : un classifieur dont les seuls exemples naturalistes d'apprentissage sont les œuvres de Zola peut-il généraliser à des romans écrits par d'autres auteurs ? Une réponse positive indiquerait qu'une partie du signal appris dépasse la simple reconnaissance d'un texte zolien. Elle ne suffirait toutefois pas à établir que le modèle a isolé une définition générale du naturalisme, puisque ses exemples positifs proviennent tous d'un même écrivain. Le terme de « transfert » désigne ici cette généralisation inter-auteurs d'un signal textuel, et non le transfert d'un modèle préentraîné au sens habituel de l'apprentissage automatique.
+
+\subsection{Constitution du corpus et séparation des auteurs}
+
+Le fichier de métadonnées réunit initialement 191 œuvres. Trois textes ont été écartés : \textit{L'Âme étrangère} et \textit{Angelus} de Guy de Maupassant, deux fragments posthumes et inachevés, ainsi que \textit{Un dilemme} de Joris-Karl Huysmans, retenu comme une nouvelle plutôt que comme un roman. Après ces exclusions, le corpus disponible comprend 188 œuvres, dont 68 étiquetées naturalistes et 120 rattachées à d'autres courants. Les règles de partition en retiennent 107 pour l'expérience ; les 81 autres restent hors des ensembles d'apprentissage, de validation et de test.
+
+La séparation est effectuée au niveau des auteurs avant tout découpage des textes. L'ensemble d'apprentissage contient les 31 œuvres de Zola, qui forment l'intégralité de la classe positive, et 34 œuvres appartenant à l'autre classe. Ces dernières proviennent de vingt auteurs dont toutes les œuvres retenues sont étiquetées « autre courant » et sont publiées entre 1865 et 1903, soit la période couverte par le corpus zolien. L'apprentissage réunit ainsi 65 œuvres de 21 auteurs.
+
+L'ensemble de validation rassemble Guy de Maupassant, Camille Lemonnier et Georges Eekhoud. Il comprend 17 œuvres, dont six naturalistes et onze relevant d'autres courants. Le test réunit les frères Goncourt, Joris-Karl Huysmans et Octave Mirbeau, pour un total de 25 œuvres presque équilibré entre les deux classes. Cette construction permet d'évaluer les différences entre œuvres chez un même auteur, plutôt que de confondre systématiquement le courant littéraire et l'identité de l'écrivain.
+
+\begin{table}[H]
+    \centering
+    \caption{Composition des ensembles utilisés pour la classification}
+    \label{tab:composition_ensembles_classification}
+    \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X
+        >{\centering\arraybackslash}p{2cm}
+        >{\centering\arraybackslash}p{2.7cm}
+        >{\centering\arraybackslash}p{2.7cm}
+        >{\centering\arraybackslash}p{1.8cm}}
+        \toprule
+        \textbf{Ensemble} & \textbf{Auteurs} & \textbf{Œuvres naturalistes} & \textbf{Autres œuvres} & \textbf{Total} \\
+        \midrule
+        Apprentissage & 21 & 31 & 34 & 65 \\
+        Validation & 3 & 6 & 11 & 17 \\
+        Test & 3 & 13 & 12 & 25 \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+Aucun auteur n'est partagé entre les trois ensembles. Le code vérifie également qu'un même texte nettoyé ne réapparaît pas sous deux titres différents, à partir de son empreinte SHA-256. Cette précaution repère les copies exactes, sans garantir l'absence de deux éditions seulement partielles ou très proches. La validation croisée aléatoire par œuvre n'a pas été retenue comme mesure principale : elle aurait réparti plusieurs romans de Zola entre différents plis et aurait surtout mesuré la reconnaissance d'un auteur déjà connu. La sélection repose au contraire sur trois auteurs entièrement absents de l'apprentissage, avant une évaluation sur trois autres auteurs également tenus à l'écart.
+
+\subsection{Préparation et segmentation des textes}
+
+Les textes sont normalisés selon la forme Unicode NFC et certains paratextes éditoriaux provenant notamment de Project Gutenberg ou de Wikisource sont retirés en mémoire, sans modification des fichiers sources. Les identifiants des auteurs sont harmonisés et plusieurs contrôles vérifient la correspondance entre les métadonnées et les fichiers, la conservation de chaque œuvre au cours du traitement et l'unicité de son étiquette.
+
+Les romans sont ensuite découpés en segments non chevauchants, en respectant autant que possible les limites de phrases. Trois longueurs cibles sont comparées : 1~000, 1~500 et 2~500 mots. Les phrases sont regroupées jusqu'à atteindre la taille visée ; un dernier fragment inférieur à la moitié de cette taille est fusionné avec le segment précédent. Une phrase exceptionnellement longue peut elle-même être divisée afin d'éviter un écart trop important.
+
+Pour empêcher les œuvres les plus longues de dominer l'apprentissage, chaque roman y fournit au maximum l'équivalent de 50~000 mots. Lorsque ce plafond est dépassé, les segments sont échantillonnés de manière reproductible avec une graine fixée à 42. Tous les segments sont en revanche conservés pour la validation et le test. Avec la longueur de 1~000 mots finalement retenue, l'apprentissage comporte 3~049 segments, la validation 1~080 et le test 1~889. Ces effectifs sont exactement les mêmes dans les conditions ANP et SNP, car les noms propres sont supprimés après la constitution des segments.
+
+\subsection{Deux conditions expérimentales : ANP et SNP}
+
+Dans la condition ANP, aucune suppression particulière des noms propres n'est appliquée. Les noms de personnages, de lieux ou d'organisations peuvent donc entrer dans le vocabulaire du modèle, à condition de satisfaire les filtres statistiques du TF--IDF. Cette version mesure le signal lexical disponible dans son ensemble. Elle peut offrir au classifieur des informations utiles, mais aussi l'inciter à reconnaître des univers fictionnels, des lieux récurrents ou des personnages plutôt que des traits plus généraux.
+
+Dans la condition SNP, chaque segment est analysé avec le modèle français de grande taille de spaCy, \texttt{fr\_core\_}\allowbreak\texttt{news\_lg}, déjà utilisé dans le chapitre précédent. Un token est supprimé lorsqu'il est reconnu comme nom propre par l'étiquette grammaticale \texttt{PROPN}, ou lorsqu'il appartient à une entité de type personne, lieu, organisation ou entité diverse, notées \texttt{PER}, \texttt{LOC}, \texttt{ORG} et \texttt{MISC}. Le nom n'est pas remplacé par une catégorie générique : il est retiré du texte avant la création de la matrice TF--IDF.
+
+Cette suppression est automatique et ne doit pas être considérée comme parfaite. Le modèle linguistique peut manquer certains noms, notamment dans des textes du XIX\textsuperscript{e} siècle, ou supprimer à tort des formes ambiguës. La condition SNP réduit donc la présence d'identifiants directs, mais elle ne neutralise ni le vocabulaire thématique, ni les métiers, ni les objets ou les milieux sociaux représentés. Elle ne produit pas davantage une mesure d'un « style pur » : elle teste seulement la persistance du signal après le retrait d'une catégorie précise d'indices.
+
+\subsection{Représentation des textes et modèles comparés}
+
+Dans les deux conditions, les segments sont représentés par des unigrammes pondérés avec le TF--IDF. Les textes ne sont ni lemmatisés ni filtrés à l'aide d'une liste de mots-outils. Le vectoriseur convertit les formes en minuscules, limite le vocabulaire à 50~000 traits, écarte les termes présents dans moins de deux segments ou dans plus de 80~\% du corpus d'apprentissage, applique une transformation sous-linéaire aux fréquences et normalise chaque vecteur selon la norme L2. Le vocabulaire et les pondérations sont ajustés uniquement sur l'ensemble d'apprentissage, puis appliqués sans réajustement à la validation et au test.
+
+Trois classifieurs sont comparés : un modèle bayésien naïf multinomial, une régression logistique avec pondération équilibrée des classes, et une analyse discriminante linéaire précédée d'une réduction SVD à 100 dimensions puis d'une standardisation. Dans les notebooks, cette dernière méthode est abrégée « LDA », pour \textit{Linear Discriminant Analysis}. Elle est désignée ici par l'acronyme français ADL afin d'éviter toute confusion avec l'allocation de Dirichlet latente présentée dans l'introduction.
+
+Pour chaque condition, la recherche combine les trois tailles de segments, les trois modèles et deux seuils de décision, $0{,}40$ et $0{,}50$, soit dix-huit configurations. Chaque modèle est entraîné sur le seul ensemble d'apprentissage et produit un score d'appartenance à la classe naturaliste pour chaque segment de validation.
+
+\subsection{Sélection des configurations et évaluation}
+
+Les scores des segments d'un même roman sont moyennés afin d'obtenir une décision unique au niveau de l'œuvre. Le critère principal de sélection est le F1 macro calculé séparément pour chacun des trois auteurs de validation, puis moyenné en leur accordant le même poids. La \textit{balanced accuracy} moyenne par auteur, le F1 du moins bon auteur et les mesures globales par œuvre servent ensuite à départager les configurations. Les résultats calculés par segment sont conservés comme diagnostics, mais ne participent pas à la sélection, car plusieurs passages issus d'un même roman ne constituent pas des observations indépendantes.
+
+Cette procédure retient, dans les deux conditions, des segments de 1~000 mots et l'analyse discriminante linéaire. Le seuil choisi sur la validation est de $0{,}50$ pour la condition ANP et de $0{,}40$ pour la condition SNP. Le modèle final est ensuite réentraîné depuis le début sur le seul ensemble d'apprentissage. Les œuvres de validation ne lui sont pas ajoutées, car cela introduirait d'autres auteurs naturalistes dans la classe positive et modifierait la question initiale, fondée sur un apprentissage positif exclusivement zolien.
+
+L'évaluation principale est réalisée au niveau des œuvres, puis répétée séparément pour chaque auteur. Elle repose sur l'exactitude, le F1 macro, la \textit{balanced accuracy}, le rappel de chacune des deux classes et l'aire sous la courbe ROC. Deux analyses de sensibilité examinent également l'effet de la chronologie. La première limite le test aux œuvres publiées entre 1865 et 1903 ; la seconde apparie, chez un même auteur, des œuvres des deux classes publiées à cinq ans d'écart au maximum. L'année n'est jamais fournie au classifieur comme variable prédictive.
+
+Ce protocole réduit plusieurs risques de fuite d'information et permet une comparaison directe entre l'ANP et la SNP. Sa portée reste néanmoins exploratoire. Zola demeure l'unique source positive de l'apprentissage, seulement trois auteurs sont utilisés pour la validation et trois pour le test, et ce dernier ensemble a été consulté au cours du développement. Les résultats ne constituent donc pas une validation définitive d'un classifieur du naturalisme. Ils permettent plutôt d'examiner si le signal lexical appris chez Zola se transfère à quelques trajectoires littéraires distinctes, et dans quelle mesure ce transfert dépend de la présence des noms propres. Les performances des deux conditions sont présentées séparément dans la section suivante avant d'être confrontées.
