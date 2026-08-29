@@ -1,6 +1,6 @@
 \section{Validation interne du modèle}
 
-Avant d'interpréter les topics et leur évolution, il convient d'évaluer la partition sur laquelle repose l'analyse. En l'absence de catégories de référence, cette démarche ne peut établir l'existence d'un découpage thématique unique : elle constitue une validation interne fondée sur la séparation des groupes, leur stabilité et la qualité de leur représentation lexicale.
+Avant d'interpréter les topics et leur évolution, il convient d'évaluer la partition sur laquelle repose l'analyse. En l'absence de catégories de référence, cette démarche ne peut établir l'existence d'un découpage thématique unique : elle associe des indices internes de partition, fondés sur la séparation et la stabilité des groupes, à des mesures intrinsèques de la représentation des topics\footnote{\fullcite{halkidi2001clustering}}.
 
 Trois états doivent être distingués. Le premier correspond à la configuration retenue lors de la recherche d'hyperparamètres ; le deuxième à son réentraînement dans le notebook \path{02_exploration_modele.ipynb} ; le troisième au modèle utilisé pour l'analyse, après réaffectation des documents atypiques et mise à jour du c-TF-IDF. Cette distinction est nécessaire, car les indicateurs ne sont pas tous recalculés à chaque étape.
 
@@ -8,7 +8,7 @@ Trois états doivent être distingués. Le premier correspond à la configuratio
 
 Lors de la grille de recherche, la configuration retenue produit 17 topics et assigne \(17\,564\) des \(61\,432\) segments. Les \(43\,868\) autres reçoivent l'étiquette \texttt{-1}, soit un taux de bruit de \(71{,}4\,\%\). Parmi les documents assignés, les topics comprennent entre 258 et \(5\,690\) segments, avec une médiane de 547 ; le plus important représente \(32{,}4\,\%\) des documents assignés.
 
-Pour un document \(i\), la silhouette compare sa distance moyenne \(a(i)\) aux documents de son topic à la plus faible distance moyenne \(b(i)\) qui le sépare d'un autre topic :
+Pour un document \(i\), la silhouette compare sa distance moyenne \(a(i)\) aux documents de son topic à la plus faible distance moyenne \(b(i)\) qui le sépare d'un autre topic\footnote{\fullcite{rousseeuw1987silhouettes}} :
 
 \[
 s(i)=\frac{b(i)-a(i)}
@@ -17,9 +17,9 @@ s(i)=\frac{b(i)-a(i)}
 
 La silhouette moyenne, calculée dans l'espace UMAP sur un échantillon reproductible d'au plus \(4\,000\) documents assignés, atteint 0,376. Cette valeur positive indique que ces documents sont en moyenne plus proches de leur propre groupe que des groupes voisins, sans pour autant montrer une séparation nette.
 
-Le DBCV complète cette mesure en évaluant la structure de densité sur l'ensemble de la projection, bruit compris. Sa valeur est légèrement négative (\(-0{,}035\)) : contrairement à la silhouette, cet indicateur ne confirme donc pas une séparation globale satisfaisante. Les deux mesures décrivent plutôt un noyau assigné partiellement structuré au sein d'une partition globale fragile.
+Le DBCV complète cette mesure en évaluant la compacité et la séparation de clusters de densité dans la projection UMAP\footnote{\fullcite{moulavi2014dbcv}}. Les segments étiquetés \texttt{-1} ne forment pas un cluster ordinaire ; la valeur doit donc être lue conjointement avec le taux de bruit. Elle est ici légèrement négative (\(-0{,}035\)) et ne fournit pas d'argument en faveur d'une séparation globale satisfaisante. Les deux mesures décrivent plutôt un noyau assigné partiellement structuré au sein d'une partition globale fragile.
 
-La stabilité est évaluée avec les graines 11, 30, 42, 57 et 73. Les partitions sont comparées par l'indice de Rand ajusté :
+La robustesse aux graines d'initialisation est évaluée avec les graines 11, 30, 42, 57 et 73. Les partitions sont comparées par l'indice de Rand ajusté\footnote{\fullcite{hubert1985comparing}} :
 
 \[
 \mathrm{ARI}
@@ -34,15 +34,15 @@ L'ARI moyen atteint \(0{,}861\pm0{,}085\) sur les documents assignés dans les d
 
 Le réentraînement final avec les mêmes hyperparamètres et la même graine retrouve 17 topics, mais ne reproduit pas exactement la partition de la grille : \(14\,467\) segments sont assignés et \(46\,965\) sont classés comme bruit, soit \(76{,}5\,\%\) du corpus. Les topics bruts contiennent alors entre 281 et \(2\,729\) segments, avec une médiane de 534. Les métriques géométriques de la grille doivent par conséquent être comprises comme des résultats de sélection et non comme des mesures de cette seconde partition.
 
-Le notebook compare ensuite six seuils de réaffectation, de 0 à 0,50, avec la stratégie \texttt{embeddings} de BERTopic. Le seuil de 0,20 conserve les 17 topics et réattribue \(46\,952\) des \(46\,965\) documents atypiques. Treize segments demeurent étiquetés \texttt{-1}, ce qui porte la couverture finale à \(99{,}98\,\%\). Les topics comptent alors entre \(1\,339\) et \(7\,588\) segments, avec une médiane de \(2\,999\) ; le plus grand rassemble \(12{,}4\,\%\) des documents assignés.
+Le notebook compare ensuite six seuils de réaffectation, de 0 à 0,50, avec la stratégie \texttt{embeddings} de BERTopic\footnote{\fullcite{bertopic_outlier_reduction}}. Celle-ci rapproche chaque segment initialement classé comme bruit de l'embedding de topic le plus similaire, selon la similarité cosinus. Le seuil de 0,20 conserve les 17 topics et réattribue \(46\,952\) des \(46\,965\) segments initialement étiquetés \texttt{-1}. Treize segments conservent cette étiquette, ce qui porte la couverture finale à \(99{,}98\,\%\). Les topics comptent alors entre \(1\,339\) et \(7\,588\) segments, avec une médiane de \(2\,999\) ; le plus grand rassemble \(12{,}4\,\%\) des documents assignés.
 
 Cette opération permet d'étendre l'analyse à la quasi-totalité du corpus, mais elle ne constitue pas une nouvelle validation géométrique. La silhouette et le DBCV ne sont pas recalculés après la réaffectation ; leurs valeurs ne décrivent donc pas les assignations finales.
 
-\subsection{Cohérence et diversité lexicales}
+\subsection{Cohérence et diversité des mots représentatifs}
 
-Après la réaffectation, la représentation des topics est reconstruite avec une courte liste de formes résiduelles exclues du vocabulaire. La cohérence \(C_v\), calculée à partir des documents lemmatisés et des dix premiers termes de chaque topic, atteint 0,389. Comme la cohérence n'est pas recalculée sur la partition brute du réentraînement final, cette valeur ne permet pas d'affirmer que la réaffectation améliore ou dégrade directement la cohérence.
+Après la réaffectation, la représentation des topics est reconstruite avec une courte liste de formes résiduelles exclues du vocabulaire. La cohérence \(C_v\)\footnote{\fullcite{roder2015coherence}}, calculée à partir des documents lemmatisés et des dix premiers termes de chaque topic, atteint 0,389. Ce score dépend notamment du corpus de cooccurrence, de la tokenisation et du nombre de termes retenus ; il s'interprète donc surtout par comparaison au sein d'un même protocole. Comme la cohérence n'est pas recalculée sur la partition brute du réentraînement final, cette valeur ne permet pas d'affirmer que la réaffectation améliore ou dégrade directement la cohérence.
 
-La diversité lexicale mesure la proportion de termes distincts parmi les mots représentatifs :
+Dans cette étude, la diversité des mots représentatifs reprend le principe de la \textit{topic diversity}\footnote{\fullcite{dieng2020topic}} et mesure la proportion de termes distincts parmi les dix premiers mots de chaque topic :
 
 \[
 D
@@ -51,7 +51,7 @@ D
 {\sum_{k=1}^{K}\left|W_k\right|},
 \]
 
-où \(W_k\) désigne l'ensemble des dix premiers mots du topic \(k\). La valeur finale de 0,947 indique que les représentations partagent peu de termes et conservent ainsi une forte diversité lexicale.
+où \(W_k\) désigne l'ensemble des dix premiers mots du topic \(k\). La valeur finale de 0,947 indique que 94,7~\% des positions de ces listes sont occupées par des termes distincts. Elle signale ainsi un faible chevauchement lexical entre les représentations, sans mesurer la richesse lexicale du corpus ni garantir à elle seule la cohérence sémantique des topics.
 
 Le tableau~\ref{tab:validation_modele_bertopic} récapitule les résultats disponibles. Le tiret signale qu'un indicateur n'a pas été recalculé dans le périmètre concerné.
 
@@ -93,10 +93,10 @@ Le tableau~\ref{tab:validation_modele_bertopic} récapitule les résultats dispo
         & \(-0{,}035\) & -- & -- \\
         Cohérence \(C_v\)
         & 0,580 & -- & 0,389 \\
-        Diversité lexicale
+        Diversité des termes
         & 0,976 & -- & 0,947 \\
         \bottomrule
     \end{tabularx}
 \end{table}
 
-La validation met ainsi en évidence un résultat contrasté. La silhouette et la stabilité montrent qu'une structure existe parmi les documents assignés, mais le DBCV négatif, le taux de bruit initial et la faible part de documents assignés en commun interdisent de parler d'une partition fortement validée. Après réaffectation, le modèle offre néanmoins 17 topics couvrant presque tout le corpus et présentant une diversité lexicale élevée. Il peut donc servir d'instrument exploratoire, à condition de préserver cette prudence lors de l'interprétation littéraire.
+La validation met ainsi en évidence un résultat contrasté. La silhouette et la robustesse aux graines suggèrent une structure partielle parmi les documents assignés dans la projection UMAP retenue, mais le DBCV négatif, le taux de bruit initial et la faible part de documents assignés en commun interdisent de parler d'une partition fortement validée. Après réaffectation, le modèle offre néanmoins 17 topics couvrant presque tout le corpus et dont les listes de mots représentatifs se chevauchent peu. Il peut donc servir d'instrument exploratoire, à condition de préserver cette prudence lors de l'interprétation littéraire.

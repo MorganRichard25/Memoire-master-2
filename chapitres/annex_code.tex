@@ -1,118 +1,186 @@
-\chapter*{Annexe technique : code}
-\addcontentsline{toc}{chapter}{Annexe technique : code}
+\chapter*{Annexe technique }
+\addcontentsline{toc}{chapter}{Annexe }
 
-\subsection{Le code suivant présente le script Python utilisé pour nettoyer les textes extraits des fichiers EPUB après leur conversion au format \textsl{.txt}}.
+\section{Reflexion sur le stockage des données}
+
+Après avoir recupéré un nombre consequant de romans naturalistes et non naturaliste, il a fallu réflechir à un moyen de les stocker quelque part. Pour cela, j'ai réfléchi à plusieurs idées pour procécéder. Le choix c'est porté sur une base de données SQL avec comme interface PHP admin. Cette base de données à d'abord été remplie en local pour effectuer des tests et ensuite, une fois que tout fonctionnait correctement, j'ai pu extraire un fichier \textsl{Dumps} et l'importer dans PHP Admin.
+
+\section{Nettoyage des textes}
+
+Après avoir réfléchi à la manière de stocker les romans, il a fallu réfléchir à un moyen de les nettoyer. En effet, les romans contiennent beaucoup de caractères spéciaux qui ne sont pas utiles pour l'analyse, notamment les caractères de mise en forme, la pagination, les notes de bas de page, les chapitres ainsi que les prologues. En effet, les prologues sont souvent des textes qui ne sont pas écrits par l'auteur du roman et qui ne sont donc pas représentatifs de son style d'écriture.
+
+Les romans naturalistes et non naturalistes sont issus de types de données différents. Il y a trois groupes de formats de données : les romans au format \textsl{.epub}, les romans au format \textsl{.pdf} et les romans au format \textsl{.txt}\footnote{Ici, les textes au format \textsl{.txt} sont organisés en dossiers, c'est-à-dire qu'un fichier \textsl{.txt} correspond à une page du roman. Il a donc fallu les regrouper pour obtenir un seul fichier \textsl{.txt} par roman.}.
+
+Pour ce qui est des textes au format \textsl{.epub}, j'ai utilisé le logiciel \textsl{Calibre}\footnote{Lien du logiciel : \href{https://calibre-ebook.com/fr/about}{https://calibre-ebook.com/fr/about}, site consulté le 18 juin 2026.} pour les convertir au format \textsl{.txt}. Pour les textes au format \textsl{.pdf}, j'ai utilisé le logiciel \textsl{Adobe Acrobat Pro} afin de les convertir au format \textsl{.txt}. Pour les textes au format \textsl{.txt}, j'ai utilisé un script Python\footnote{Le script est disponible en annexe.} pour regrouper les fichiers en un seul fichier par roman.
+
+La grande majorité de mes romans étaient au format \textsl{.epub}. Après leur conversion au format \textsl{.txt}, j'ai donc utilisé un script Python\footnote{Le script est disponible en annexe. Il faut préciser que je n'ai pas utilisé un seul script, mais plusieurs. Il s'agira donc d'un script général. Il y a eu énormément de modifications internes, notamment pour les chapitres qui sont soit en majuscules, avec chiffres romains, ou sans chiffres romains. Il a donc fallu faire des ajustements à chaque fois.} pour nettoyer les textes. Ce script supprime les caractères spéciaux, les notes de bas de page, les chapitres et les prologues. Il supprime également les lignes vides et les espaces en trop. Le script est basé sur des expressions régulières pour identifier les éléments à supprimer.
+
+Pour ce qui est du choix des éléments à supprimer, j'ai fait le choix de supprimer les chapitres, car ils ne sont pas représentatifs du style d'écriture de l'auteur. De plus, comme nous l'avons vu dans le chapitre 2, j'ai passé un détecteur de motifs sur les textes afin d'identifier les motifs récurrents. J'ai donc gardé uniquement le corps du texte pour l'analyse. Ce choix se justifie également par la volonté d'obtenir une normalisation entre les textes\footnote{certains textes de disposant pas de }(une ligne est égal a une phrase), ce choix peut etre mit en opposition avec le choix de garder la distinction entre les différents chapitres du romans mais je me defend en prenant en comptre que certains romans ne sont pas découpés en chapitres. Les differents romans sont soient découpés en partie (exemple : Partie I, Partie II, etc.), soit en chapitres (exemple : Chapitre I, Chapitre II, etc.), soit avec une combinaison des deux (exemple : Partie I, Chapitre I, Chapitre II, Partie II, Chapitre III, etc.). Ou pour finir, le titre du chapitre est écrit en majuscules, avec des chiffres romains, ou sans chiffres romains. Il aurait donc fallu faire des ajustements à chaque fois pour identifier les chapitres. De plus, certains romans résultaient de l'assemblage de plusieurs fichiers \textsl{.txt}. Dans ces cas, la séparation entre les chapitres, initialement présente dans la structure HTML du roman, n'était plus conservée.
+
+\section{Création de la base de données}
+
+Après avoir nettoyé les textes, il a fallu créer une base de données pour stocker les informations relatives aux romans. J'ai choisi d'utiliser le système de gestion de base de données relationnelle \textsl{MySQL}, car il permet d'organiser les données sous forme de tables et de conserver des relations claires entre les auteurs, les romans et les unités textuelles extraites.
+
+Je vais donc présenter la structure de cette base de données ainsi que les différentes tables qui la composent. Chaque table a un rôle précis : certaines servent à stocker les informations bibliographiques, tandis que d'autres permettent de conserver les textes, les segments ou encore les phrases extraites pour l'analyse.
+
+J'ai choisi de présenter ce code directement dans le corps du mémoire\footnote{Je précise également que tous les codes utilisés pour la réalisation de ce mémoire sont disponibles sur mon GitHub.} et non uniquement en annexe, afin de rendre plus claire la manière dont les données ont été organisées avant l'analyse. 
+
+\begin{listing}[htbp]
+\begin{minted}[
+    fontsize=\scriptsize,
+    breaklines=true,
+    frame=lines,
+    linenos=true,
+    numbersep=5pt,
+    autogobble
+]{sql}
+CREATE DATABASE romans_nlp;
+USE romans_nlp;
+
+-- Creation des tables pour la base de donnees des romans et des auteurs
+CREATE TABLE auteurs (
+    id_auteur INT PRIMARY KEY AUTO_INCREMENT,
+    nom VARCHAR(100) NOT NULL,
+    prenom VARCHAR(100)
+);
+
+-- Table pour stocker les romans, avec leur titre et leur annee de publication
+CREATE TABLE romans (
+    id_roman INT PRIMARY KEY AUTO_INCREMENT,
+    titre VARCHAR(255) NOT NULL,
+    annee_publication INT,
+    texte_brut LONGTEXT
+);
+
+-- Table d'association pour gerer la relation plusieurs-a-plusieurs entre auteurs et romans
+CREATE TABLE auteurs_romans (
+    id_auteur INT NOT NULL,
+    id_roman INT NOT NULL,
+    PRIMARY KEY (id_auteur, id_roman),
+    FOREIGN KEY (id_auteur) REFERENCES auteurs(id_auteur),
+    FOREIGN KEY (id_roman) REFERENCES romans(id_roman)
+);
+
+-- Table pour stocker les segments extraits des romans, avec leur ordre de segmentation
+CREATE TABLE segments (
+    id_segment INT PRIMARY KEY AUTO_INCREMENT,
+    id_roman INT NOT NULL,
+    ordre_segment INT NOT NULL,
+    texte_segment LONGTEXT NOT NULL,
+    FOREIGN KEY (id_roman) REFERENCES romans(id_roman)
+);
+
+/*
+Apres reflexion, il est egalement possible d'ajouter les dates
+de naissance et de mort des auteurs afin d'enrichir la base de donnees.
+*/
+ALTER TABLE auteurs
+ADD date_naissance INT;
+
+ALTER TABLE auteurs
+ADD date_mort INT;
+
+-- Table pour stocker les phrases extraites des romans, avec leur motif d'extraction
+CREATE TABLE phrase_roman (
+    id_phrase INT PRIMARY KEY AUTO_INCREMENT,
+    id_roman INT NOT NULL,
+    ordre_phrase INT NOT NULL,
+    texte_phrase TEXT NOT NULL,
+    motif_phrase TEXT NOT NULL,
+    FOREIGN KEY (id_roman) REFERENCES romans(id_roman)
+);
+\end{minted}
+\caption{Création de la base de données romans\_nlp}
+\end{listing}
+
+Ce code permet de créer la base de données utilisée pour stocker les romans du corpus ainsi que les informations nécessaires à leur analyse. La base, nommée \texttt{romans\_nlp}, est d'abord créée puis sélectionnée afin que toutes les tables suivantes y soient enregistrées.
+
+La première table, \texttt{auteurs}, sert à stocker les informations relatives aux auteurs. Chaque auteur reçoit un identifiant unique, auquel sont associés son nom et, lorsque l'information est disponible, son prénom. Cette table est ensuite complétée par deux colonnes supplémentaires, \texttt{date\_naissance} et \texttt{date\_mort}, afin d'enrichir la description des auteurs et de permettre d'éventuelles analyses chronologiques.
+
+La table \texttt{romans} contient les informations principales sur les œuvres du corpus. Elle associe à chaque roman un identifiant unique, un titre, une année de publication ainsi que le texte brut du roman. Le choix du type \texttt{LONGTEXT} pour le champ \texttt{texte\_brut} permet de stocker des textes longs, ce qui est nécessaire dans le cas de romans complets.
+
+La table \texttt{auteurs\_romans} permet de faire le lien entre les auteurs et les romans. Elle sert à gérer une relation de type plusieurs-à-plusieurs : un auteur peut être associé à plusieurs romans, et un roman peut éventuellement être associé à plusieurs auteurs. Les clés étrangères \texttt{id\_auteur} et \texttt{id\_roman} permettent de relier cette table aux tables \texttt{auteurs} et \texttt{romans}.
+
+La table \texttt{segments} sert à stocker les segments extraits des romans. Chaque segment est rattaché à un roman grâce à la clé étrangère \texttt{id\_roman}. Le champ \texttt{ordre\_segment} permet de conserver l'ordre d'apparition des segments dans le texte d'origine. Cela est important, car même si le texte est découpé pour les traitements, il reste possible de retrouver sa progression initiale.
+
+Enfin, la table \texttt{phrase\_roman} permet de stocker les phrases extraites des romans. Chaque phrase est associée au roman dont elle provient, à son ordre d'apparition, à son contenu textuel et au motif qui a permis son extraction. Ce dernier champ est important, car il permet de garder une trace de la méthode utilisée pour sélectionner les phrases et de relier chaque extraction à un critère précis.
+
+L'ensemble de cette structure permet donc de conserver à la fois les textes complets, leurs découpages en segments, les phrases extraites et les informations bibliographiques liées aux auteurs et aux œuvres. Elle constitue ainsi une base organisée pour les traitements de fouille de texte et d'analyse automatique du corpus.
+
+
+\section{Création des informations pour la base de données}
+
+Après avoir créé les tables nécessaires pour stocker les informations sur les auteurs, les romans et les relations entre eux, il est temps d'insérer les données relatives aux frères Goncourt et à leurs œuvres. Le code suivant présente donc l'insertion des auteurs, des romans et des relations entre ces deux tables.
 
 \begin{minted}[
     fontsize=\scriptsize,
     breaklines=true,
-    breakanywhere=true,
+    frame=lines,
     linenos=true,
     numbersep=5pt,
-    frame=lines,
-    framesep=2mm,
-    baselinestretch=1,
     autogobble
-]{python}
-from pathlib import Path
-import re
+]{sql}
+/*
+Insertion des freres Goncourt.
+*/
+INSERT INTO auteurs (nom, prenom) 
+VALUES
+    ('de Goncourt', 'Edmond'),
+    ('de Goncourt', 'Jules');
+/*
+Insertion des romans des freres Goncourt
+*/
+INSERT INTO romans (titre, annee_publication) 
+VALUES
+    ('Charles Demailly', 1860),
+    ('Soeur Philomene', 1861),
+    ('Renee Mauperin', 1864),
+    ('Germinie Lacerteux', 1865),
+    ('Manette Salomon', 1867),
+    ('Madame Gervaisais', 1869),
+    ('La Fille Elisa', 1877),
+    ('Freres Zemganno', 1879),
+    ('La Faustin', 1882),
+    ('Cherie', 1884);
+/*
+Insertion des relations entre les auteurs et les romans.
+Les six premiers romans sont associes aux deux freres Goncourt.
+Les romans suivants sont associes uniquement a Edmond de Goncourt.
+*/
+INSERT INTO auteurs_romans (id_auteur, id_roman) 
+VALUES
+    (1,1), (2,1),
+    (1,2), (2,2),
+    (1,3), (2,3),
+    (1,4), (2,4),
+    (1,5), (2,5),
+    (1,6), (2,6),
+    (1,7),
+    (1,8),
+    (1,9),
+    (1,10);
+-- Mise a jour des dates de naissance et de mort de Jules de Goncourt.
+UPDATE auteurs
+SET date_naissance = 1830,
+    date_mort = 1870
+WHERE id_auteur = 2;
 
+-- Mise a jour des dates de naissance et de mort d'Edmond de Goncourt.
+UPDATE auteurs
+SET date_naissance = 1822,
+    date_mort = 1896
+WHERE id_auteur = 1;
 
-def nettoyage_structure_epub(texte):
-    texte_propre = texte
-
-    # Nettoyage initial des espaces insécables
-    texte_propre = re.sub(r'[\xa0\u202f]', ' ', texte_propre)
-
-    # Suppression des éléments placés entre crochets
-    texte_propre = re.sub(r'\[.*?\]', '', texte_propre)
-
-    # Conservation uniquement des caractères utiles pour l'analyse
-    texte_propre = re.sub(
-        r'[^a-zA-Z0-9àâäéèêëîïôöùûüçÀÂÄÉÈÊËÎÏÔÖÙÛÜÇœŒ'
-        r'\s.,;:!?\-()\[\]]',
-        '',
-        texte_propre
-    )
-
-    # Suppression des chiffres collés aux mots
-    texte_propre = re.sub(
-        r'([a-zA-ZàâäéèêëîïôöùûüçÀÂÄÉÈÊËÎÏÔÖÙÛÜÇœŒ])\d+',
-        r'\1',
-        texte_propre
-    )
-
-    # Nettoyage des tirets et des guillemets
-    texte_propre = re.sub(r'-{2,}', '-', texte_propre)
-    texte_propre = re.sub(r'["«»“”]', '', texte_propre)
-
-    # Suppression des numéros de page isolés
-    texte_propre = re.sub(r'(?m)^\s*\d+\s*$', '', texte_propre)
-
-    # Suppression des titres de chapitre en chiffres romains
-    texte_propre = re.sub(r"(?im)^\s*[IVXLCDM]+\s*$", "", texte_propre)
-
-    # Suppression de certains éléments propres aux fichiers EPUB
-    texte_propre = re.sub(r"(?im)^\s*Liste des titres\s*$", "", texte_propre)
-    texte_propre = re.sub(r"(?im)^\s*Table des matières du titre\s*$", "", texte_propre)
-
-    # Suppression des lignes entièrement écrites en majuscules
-    texte_propre = re.sub(
-        r"(?m)^\s*[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ'’\s]+\s*$",
-        "", texte_propre
-    )
-
-    # Transformation du texte en un seul bloc continu
-    texte_propre = re.sub(r'\s+', ' ', texte_propre)
-
-    # Segmentation du texte en phrases
-    pattern_segmentation = r"(?<!\bM)([.?!])\s+(?=[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ\-])"
-    texte_propre = re.sub(pattern_segmentation, r"\1\n", texte_propre)
-
-    # Remise à la ligne des dialogues
-    texte_propre = re.sub(r'\s+(?=-)', r'\n', texte_propre)
-
-    return texte_propre.strip()
-
-
-# Définition des dossiers source et destination
-dossier_source = Path("nom_dossier")
-dossier_destination = Path("Text_nettoyé/nom_dossier")
-
-# Création du dossier de destination s'il n'existe pas
-dossier_destination.mkdir(parents=True, exist_ok=True)
-
-# Compteur permettant de suivre le nombre de fichiers traités
-fichiers_traites = 0
-
-print(f"Début du traitement des fichiers dans : {dossier_source}...\n")
-
-# Boucle sur tous les fichiers .txt du dossier source
-for fichier_source in dossier_source.glob("*.txt"):
-
-    print(f"-> Nettoyage de : {fichier_source.name}")
-
-    try:
-        # Lecture du fichier brut
-        contenu_brut = fichier_source.read_text(encoding="utf-8")
-
-        # Nettoyage du texte
-        contenu_propre = nettoyage_structure_epub(contenu_brut)
-
-        # Création du nom du fichier nettoyé
-        nom_fichier_propre = f"{fichier_source.stem}_clean.txt"
-        fichier_destination = dossier_destination / nom_fichier_propre
-
-        # Sauvegarde du fichier nettoyé
-        fichier_destination.write_text(contenu_propre, encoding="utf-8")
-
-        fichiers_traites += 1
-
-    except Exception as e:
-        print(f"   [ERREUR] Impossible de traiter {fichier_source.name} : {e}")
-
-print(
-    f"\nOpération terminée ! {fichiers_traites} fichiers ont été nettoyés "
-    f"et placés dans le dossier '{dossier_destination}'."
-)
 \end{minted}
+
+Ce code permet d'insérer dans la base de données les informations relatives aux frères Goncourt et à leurs romans. Dans un premier temps, les deux auteurs sont ajoutés dans la table \texttt{auteurs}. Ils reçoivent chacun un identifiant, qui permettra ensuite de les relier aux œuvres présentes dans la base.
+
+La deuxième partie du code insère les romans des frères Goncourt dans la table \texttt{romans}. Chaque œuvre est associée à son titre et à son année de publication. Cette étape permet donc de constituer une partie du corpus à partir des romans retenus pour l'analyse.
+
+Ensuite, la table \texttt{auteurs\_romans} est utilisée pour associer les auteurs aux romans. Cette table est importante, car elle permet de gérer le cas particulier des œuvres écrites à deux mains. Les six premiers romans sont associés à Edmond et Jules de Goncourt, tandis que les romans publiés après la mort de Jules sont associés uniquement à Edmond. Cela permet de conserver une information plus précise sur l'attribution des œuvres.
+
+Enfin, les deux dernières requêtes mettent à jour les dates de naissance et de mort des auteurs. Ces informations biographiques ne sont pas directement nécessaires pour stocker les textes, mais elles permettent d'enrichir la base de données. Elles peuvent aussi être utiles par la suite si l'on souhaite croiser les résultats de l'analyse avec des éléments chronologiques ou biographiques.
+
+Ce passage sert donc à remplir une première partie de la base de données avec les auteurs, les romans et les relations entre eux. Il montre aussi l'intérêt de séparer les informations dans plusieurs tables : les auteurs sont stockés d'un côté, les romans de l'autre, et la relation entre les deux est conservée dans une table spécifique.
+
+Il faut maintenant ajouter les romans dans la base de données, il peut y avoir plusieurs façons de le faire, 

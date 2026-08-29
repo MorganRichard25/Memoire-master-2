@@ -11,7 +11,7 @@ Deux versions synchronisées de chaque segment sont utilisées. Le texte non lem
 
 \subsection{Segmentation et statistiques descriptives}
 
-La segmentation est directement déterminée par la capacité du modèle \texttt{sentence-\allowbreak camembert-\allowbreak base}. Celui-ci accepte au maximum 128 tokens, tokens spéciaux compris. Le programme vise donc des segments d'environ 110 tokens de contenu et réserve l'espace nécessaire aux tokens ajoutés par CamemBERT. Les unités textuelles non vides sont regroupées tant que cette limite n'est pas dépassée ; lorsqu'une unité est trop longue pour tenir seule, elle est exceptionnellement découpée. La fin de chaque roman est systématiquement conservée, même lorsqu'elle forme un segment très court.
+La segmentation est directement déterminée par la capacité du modèle \texttt{sentence-\allowbreak camembert-\allowbreak base}. Celui-ci accepte au maximum 128 tokens, tokens spéciaux compris\footnote{\href{https://huggingface.co/dangvantuan/sentence-camembert-base} {Fiche du modèle sur Hugging Face}}. Le programme vise donc des segments d'environ 110 tokens de contenu et réserve l'espace nécessaire aux tokens ajoutés par CamemBERT. Les unités textuelles non vides sont regroupées tant que cette limite n'est pas dépassée ; lorsqu'une unité est trop longue pour tenir seule, elle est exceptionnellement découpée. La fin de chaque roman est systématiquement conservée, même lorsqu'elle forme un segment très court.
 
 \begin{table}[htbp]
     \centering
